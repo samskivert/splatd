@@ -1,4 +1,5 @@
-# sshPublicKeys.py
+# sshPublicKeys.py vi:ts=4:sw=4:expandtab:
+#
 # LDAP SSH Public Key Helper.
 # Author: Will Barton <wbb4@opendarwin.org>
 #

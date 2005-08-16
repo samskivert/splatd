@@ -1,4 +1,5 @@
-# daemon.py
+# daemon.py vi:ts=4:sw=4:expandtab:
+#
 # LIDS Daemon Support.
 # Author: Will Barton <wbb4@opendarwin.org>
 #

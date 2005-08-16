@@ -1,4 +1,5 @@
-# classes.py
+# classes.py vi:ts=4:sw=4:expandtab:
+#
 # LIDS support classes.
 # Author: Will Barton <wbb4@opendarwin.org>
 #

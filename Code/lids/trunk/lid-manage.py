@@ -1,6 +1,6 @@
 #!/usr/bin/env python
+# lid-manage.py vi:ts=4:sw=4:expandtab:
 #
-# lid-manage.py
 # A tool for managing SSH keys stored in LDAP
 # LDAP Information Distribution Suite
 #

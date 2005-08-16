@@ -1,4 +1,6 @@
-# setup.py
+#!/usr/bin/env python
+# setup.py vi:ts=4:sw=4:expandtab:
+#
 # LDAP Information Distribution Suite
 # Author: Will Barton <wbb4@opendarwin.org>
 #

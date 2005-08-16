@@ -1,4 +1,5 @@
-# functions.py
+# functions.py vi:ts=4:sw=4:expandtab:
+#
 # LIDS support functions.
 # Author: Will Barton <wbb4@opendarwin.org>
 #
