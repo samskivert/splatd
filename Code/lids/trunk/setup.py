@@ -30,3 +30,27 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+
+from distutils.core import setup
+import lids 
+
+VERSION = lids.__version__
+AUTHOR = lids.__author__
+EMAIL = lids.__author_email__
+LICENSE = lids.__license__
+
+setup(
+    name = "lids",
+    version = VERSION,
+    author = AUTHOR,
+    author_email = EMAIL,
+    license = LICENSE,
+    scripts = [
+        'lid-manage.py',
+        'lidd.py'
+    ],
+    packages = [
+        'lids',
+        'lids.helpers'
+    ]
+)

@@ -35,3 +35,10 @@ __all__ = ["helpers"]
 from functions import search, modify, push, parse_config, helper_attributes, bind
 from classes import SearchResult, Entry, Object, LIDSError
 from daemon import daemon
+
+# General Info
+__version__ = '0.5'
+__license__ = 'BSD License'
+__author__ = 'Three Rings Design, Inc.'
+__author_email__ = 'dpw@threerings.net'
+__copyright__ = 'Copyright (C) 2005 Three Rings Design, Inc. All rights reserved.'
