@@ -33,7 +33,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import sys, logging
+import sys, logging, getopt
 import lids
 
 def search(conf, section):
@@ -55,9 +55,7 @@ def modify(conf, base_dn, modlist):
         mod_dict[attr] = value
     lids.modify(conf, base_dn, mod_dict)
 
-if __name__ == "__main__":
-    import getopt
-
+def main():
     action = None
     section = None
     base_dn = None
@@ -116,3 +114,5 @@ if __name__ == "__main__":
         usage()
         sys.exit(2)
 
+if __name__ == "__main__":
+    main()
