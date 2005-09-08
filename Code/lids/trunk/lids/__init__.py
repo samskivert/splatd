@@ -30,6 +30,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import os
+
 __all__ = ["helpers"]
 
 from functions import search, modify, push, parse_config, helper_attributes, bind
@@ -42,3 +44,7 @@ __license__ = 'BSD License'
 __author__ = 'Three Rings Design, Inc.'
 __author_email__ = 'dpw@threerings.net'
 __copyright__ = 'Copyright (C) 2005 Three Rings Design, Inc. All rights reserved.'
+
+# Useful Constants
+INSTALL_DIR = os.path.dirname(__file__)
+DATA_DIR = os.path.join(INSTALL_DIR, 'data')
