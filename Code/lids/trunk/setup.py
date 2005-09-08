@@ -46,8 +46,8 @@ setup(
     author_email = EMAIL,
     license = LICENSE,
     scripts = [
-        'lid-manage.py',
-        'lidd.py'
+        'lid-manage',
+        'lidd'
     ],
     packages = [
         'lids',
