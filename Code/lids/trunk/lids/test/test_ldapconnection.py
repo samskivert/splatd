@@ -36,6 +36,7 @@
 """ LDAP Unit Tests """
 
 from twisted.trial import unittest
+import ldap
 
 from lids.ldapconnection import LDAPConnection
 
@@ -55,4 +56,7 @@ class LDAPConnectionTestCase(unittest.TestCase):
         self.slapd.stop()
 
     def test_initialize(self):
-        pass
+        self.assertEquals(self.conn._ldap.protocol_version, ldap.VERSION3)
+
+    def test_simple_bind(self):
+        self.conn.simple_bind(slapd.ROOTDN, slapd.ROOTPW)

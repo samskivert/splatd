@@ -21,6 +21,7 @@ objectClass: organizationalUnit
 # john, Groups, example.com
 dn: cn=john,ou=Groups,dc=example,dc=com
 cn: john
+userPassword: secret
 objectClass: top
 objectClass: posixGroup
 gidNumber: 10000
@@ -28,6 +29,7 @@ gidNumber: 10000
 # sally, Groups, example.com
 dn: cn=sally,ou=Groups,dc=example,dc=com
 cn: sally
+userPassword: secret
 objectClass: top
 objectClass: posixGroup
 gidNumber: 10001
