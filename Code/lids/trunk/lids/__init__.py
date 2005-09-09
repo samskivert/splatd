@@ -32,7 +32,7 @@
 
 import os
 
-__all__ = ['ldapconnection', 'helpers', 'test']
+__all__ = ['ldaputils', 'helpers', 'test']
 
 from functions import search, modify, push, parse_config, helper_attributes, bind
 from classes import SearchResult, Entry, Object, LIDSError

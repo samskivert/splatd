@@ -34,7 +34,7 @@
 
 import os
 
-__all__ = ['test_ldapconnection', 'slapd']
+__all__ = ['test_ldaputils']
 
 # Useful Constants
 INSTALL_DIR = os.path.dirname(__file__)

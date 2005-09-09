@@ -33,10 +33,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-""" slapd invoker """
+"""
+LDAP Server Test Harness
+Initializes the directory with test data and invokes slapd listening on a unix domain socket
+"""
 
 import os, posix, shutil, signal
-import urllib
+import subprocess, urllib
 
 # Useful Constants
 from lids.test import DATA_DIR
@@ -51,9 +54,13 @@ SLAPD_LDIF = os.path.join(LDAP_DIR, 'test.ldif')
 
 SLAPD_PATHS = [
     '/usr/local/libexec/slapd',
+    '/opt/local/libexec/slapd',
     '/usr/sbin/slapd',
     None
 ]
+
+ROOTDN = 'cn=Manager,dc=example,dc=com'
+ROOTPW = 'secret'
 
 class LDAPServer(object):
     def __init__(self):
@@ -65,6 +72,7 @@ class LDAPServer(object):
 
         self._clean()
 
+        # Fix up paths in the slapd configuration file
         output = open(SLAPD_CONFIG, 'w')
         input = open(SLAPD_CONFIG_IN, 'r')
         for line in input:
@@ -74,9 +82,10 @@ class LDAPServer(object):
         output.close()
         input.close()
 
+        # Load the directory with our test data
         posix.mkdir(SLAPD_DATA)
-
         pid = os.spawnv(os.P_NOWAIT, slapd, [slapd, '-T', 'a', '-f', SLAPD_CONFIG, '-l', SLAPD_LDIF])
+        # Wait for completion
         while(1):
             try:
                 os.waitpid(pid, 0)
@@ -87,13 +96,23 @@ class LDAPServer(object):
                 raise
             break
 
-        self._pid = os.spawnv(os.P_NOWAIT, slapd, [slapd, '-d', '0', '-h', SLAPD_URI, '-f', SLAPD_CONFIG])
+        # Fire up the LDAP server
+        self._p = subprocess.Popen([slapd, '-d', '1', '-h', SLAPD_URI, '-f', SLAPD_CONFIG], stderr = subprocess.PIPE)
+        # Wait for process to initialize
+        while 1:
+            line = self._p.stderr.readline()
+            if (line == ""):
+                break
+            if (line == "slapd starting\n"):
+                # XXX There is still a tiny race here, and there's nothing we can do about it.
+                import time
+                time.sleep(.01)
+                break
 
     def _clean(self):
         # Reset the directory data
         if (os.path.isdir(SLAPD_DATA)):
             shutil.rmtree(SLAPD_DATA)
-        assert(os.path.exists(SLAPD_DATA) == False)
 
         if (os.path.exists(SLAPD_CONFIG)):
             posix.unlink(SLAPD_CONFIG)
@@ -102,5 +121,5 @@ class LDAPServer(object):
             posix.unlink(SLAPD_SOCKET)
 
     def stop(self):
-        os.kill(self._pid, 2)
+        os.kill(self._p.pid, 2)
         self._clean()

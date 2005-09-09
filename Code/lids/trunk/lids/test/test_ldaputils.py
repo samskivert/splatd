@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# test_ldapconnection.py vi:ts=4:sw=4:expandtab:
+# test_ldap.py vi:ts=4:sw=4:expandtab:
 #
 # LDAP Information Distribution System
 # Authors:
@@ -38,19 +38,19 @@
 from twisted.trial import unittest
 import ldap
 
-from lids.ldapconnection import LDAPConnection
+from lids import ldaputils
 
 # Useful Constants
 from lids.test import DATA_DIR
 from lids.test import slapd
 
 # Test Cases
-class LDAPConnectionTestCase(unittest.TestCase):
+class ConnectionTestCase(unittest.TestCase):
     """ Test LDAP Connection """
 
     def setUp(self):
         self.slapd = slapd.LDAPServer()
-        self.conn = LDAPConnection(slapd.SLAPD_URI)
+        self.conn = ldaputils.Connection(slapd.SLAPD_URI)
 
     def tearDown(self):
         self.slapd.stop()
