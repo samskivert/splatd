@@ -1,7 +1,10 @@
-# lidd.py vi:ts=4:sw=4:expandtab:
+#!/usr/bin/env python
+# test_ldapconnection.py vi:ts=4:sw=4:expandtab:
 #
-# LDAP Information Distribution Suite
-# Author: Will Barton <wbb4@opendarwin.org>
+# LDAP Information Distribution System
+# Authors:
+#       Landon Fuller <landonf@threerings.net>
+#       Will Barton <wbb4@opendarwin.org>
 #
 # Copyright (c) 2005 Three Rings Design, Inc.
 # All rights reserved.
@@ -30,21 +33,26 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os
+""" LDAP Unit Tests """
 
-__all__ = ['ldapconnection', 'helpers', 'test']
+from twisted.trial import unittest
 
-from functions import search, modify, push, parse_config, helper_attributes, bind
-from classes import SearchResult, Entry, Object, LIDSError
-from daemon import daemon
-
-# General Info
-__version__ = '0.5'
-__license__ = 'BSD License'
-__author__ = 'Three Rings Design, Inc.'
-__author_email__ = 'dpw@threerings.net'
-__copyright__ = 'Copyright (C) 2005 Three Rings Design, Inc. All rights reserved.'
+from lids.ldapconnection import LDAPConnection
 
 # Useful Constants
-INSTALL_DIR = os.path.dirname(__file__)
-DATA_DIR = os.path.join(INSTALL_DIR, 'data')
+from lids.test import DATA_DIR
+from lids.test import slapd
+
+# Test Cases
+class LDAPConnectionTestCase(unittest.TestCase):
+    """ Test LDAP Connection """
+
+    def setUp(self):
+        self.slapd = slapd.LDAPServer()
+        self.conn = LDAPConnection(slapd.SLAPD_URI)
+
+    def tearDown(self):
+        self.slapd.stop()
+
+    def test_initialize(self):
+        pass

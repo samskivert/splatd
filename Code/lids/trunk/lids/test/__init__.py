@@ -1,7 +1,9 @@
-# lidd.py vi:ts=4:sw=4:expandtab:
+# __init__.py vi:ts=4:sw=4:expandtab:
 #
 # LDAP Information Distribution Suite
-# Author: Will Barton <wbb4@opendarwin.org>
+# Authors:
+#       Will Barton <wbb4@opendarwin.org>
+#       Landon Fuller <landonf@opendarwin.org>
 #
 # Copyright (c) 2005 Three Rings Design, Inc.
 # All rights reserved.
@@ -32,18 +34,7 @@
 
 import os
 
-__all__ = ['ldapconnection', 'helpers', 'test']
-
-from functions import search, modify, push, parse_config, helper_attributes, bind
-from classes import SearchResult, Entry, Object, LIDSError
-from daemon import daemon
-
-# General Info
-__version__ = '0.5'
-__license__ = 'BSD License'
-__author__ = 'Three Rings Design, Inc.'
-__author_email__ = 'dpw@threerings.net'
-__copyright__ = 'Copyright (C) 2005 Three Rings Design, Inc. All rights reserved.'
+__all__ = ['test_ldapconnection', 'slapd']
 
 # Useful Constants
 INSTALL_DIR = os.path.dirname(__file__)
