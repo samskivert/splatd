@@ -123,4 +123,14 @@ class LDAPServer(object):
 
     def stop(self):
         os.kill(self._p.pid, 2)
+        # Wait for completion
+        while(1):
+            try:
+                os.waitpid(self._p.pid, 0)
+            except OSError, e:
+                import errno
+                if e.errno == errno.EINTR:
+                    continue
+                raise
+            break
         self._clean()
