@@ -110,6 +110,9 @@ class LDAPServer(object):
                 time.sleep(.01)
                 break
 
+        # We're no longer interested in stderr
+        self._p.stderr = None
+
     def _clean(self):
         # Reset the directory data
         if (os.path.isdir(SLAPD_DATA)):
