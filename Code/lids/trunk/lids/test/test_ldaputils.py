@@ -47,7 +47,6 @@ from lids.test import slapd
 # Test Cases
 class ConnectionTestCase(unittest.TestCase):
     """ Test LDAP Connection """
-
     def setUp(self):
         self.slapd = slapd.LDAPServer()
         self.conn = ldaputils.Connection(slapd.SLAPD_URI)
@@ -60,3 +59,45 @@ class ConnectionTestCase(unittest.TestCase):
 
     def test_simple_bind(self):
         self.conn.simple_bind(slapd.ROOTDN, slapd.ROOTPW)
+
+    def test_search(self):
+        result = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)', ['uid',])
+        self.assertEquals(result[0].attributes['uid'][0], 'john')
+
+    def test_modify(self):
+        # Acquire write privs
+        self.conn.simple_bind(slapd.ROOTDN, slapd.ROOTPW)
+
+        # Find entry
+        entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)', None)[0]
+
+        mod = {}
+        mod.update(entry.attributes)
+        # Test MOD_REPLACE
+        mod['cn'] = "Test"
+        # Test MOD_ADD
+        mod['street'] = "Test"
+        # Test MOD_DELETE
+        mod.pop('loginShell')
+        # Do modification
+        self.conn.modify(entry.dn, entry.attributes, mod)
+
+        # Verify the result
+        entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)', ['cn', 'street'])[0]
+        self.assertEquals(entry.attributes.get('cn')[0], 'Test')
+        self.assertEquals(entry.attributes.get('street')[0], 'Test')
+        self.assert_(not entry.attributes.has_key('loginShell'))
+
+class EntryTestCase(unittest.TestCase):
+    """ Test LDAP Entry Objects """
+    def setUp(self):
+        self.slapd = slapd.LDAPServer()
+        self.conn = ldaputils.Connection(slapd.SLAPD_URI)
+
+    def tearDown(self):
+        self.slapd.stop()
+
+    def test_search_result(self):
+        result = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)', ['uid',])
+        self.assertEquals(result[0].attributes['uid'][0], 'john')
+        self.assertEquals(result[0].dn, 'uid=john,ou=People,dc=example,dc=com')

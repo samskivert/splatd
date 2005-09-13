@@ -61,6 +61,7 @@ SLAPD_PATHS = [
 
 ROOTDN = 'cn=Manager,dc=example,dc=com'
 ROOTPW = 'secret'
+BASEDN = 'dc=example,dc=com'
 
 class LDAPServer(object):
     def __init__(self):

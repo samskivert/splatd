@@ -32,8 +32,9 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import logging, ldap
+import ldap, ldap.modlist
 import lids
+from lids import LIDSError
 
 class Connection(object):
     """
@@ -53,79 +54,61 @@ class Connection(object):
         @param bind_dn: Bind DN
         @param password: Bind Password
         """
-        logger = logging.getLogger("lids")
 
         try:
-            logger.debug("Connceting to ldap")
             self._ldap.simple_bind(bind_dn, password)
         except ldap.LDAPError, e:
-            logger.critical("An LDAPError occurred: %s" % e)
-            raise lids.LIDSError, "An LDAPError occurred: %s" % e
+            raise LIDSError, "An LDAPError occurred: %s" % e
 
-class SearchResult(list):
-    """ """
-    # The result looks like:
-    #   [   List of entries
-    #       [ ( entry, attributes ) ]
-    #        [ ( entry, attributes ) ]
-
-    result_set = []
-    
-    def __init__(self, result_set):
-        self.result_set = result_set
-        self.extract_entries()
-
-    def extract_entries(self): 
-        # Extract the entries from the result_set, and create Entrys
-        # for them, added to self (which is a list object)
-        for entry in self.result_set:
-            dn = entry[0][0]
-            attrs = entry[0][1]
-            self.append(Entry(dn, attrs))
-
-class Entry(dict):
-    """ """
-
-    def __init__(self, dn, attrs):
-        self["dn"] = dn
-        self.update(attrs)
-
-    def dn(self):
-        return self.get("dn", None)
-
-    def getAttribute(self, attr):
+    def search(self, base_dn, scope, filter, attributes):
         """ 
-            Fetch an attribute's value from the entry.  If the entry
-            value is a list, and there is only one item in the list, it
-            will return just the item.
+        Search the given base DN of the given LDAP server within
+        the given scope (defaulting to subtree), applying
+        the given filter, and returns a list of Entry objects
+        containing the results.
+        @param base_dn: Search base DN.
+        @param scope: Search scope. One of ldap.SCOPE_SUBTREE, ldap.SCOPE_BASE, or ldap.SCOPE_ONE
+        @param filter: LDAP search filter.
         """
+        # Search the directory using the given base and filter, if we get
+        # results, put them in a list, and hand off to SearchResults
+        try:
+            result_id = self._ldap.search(base_dn, scope, filter, attributes)
+            result_set = []
+            while 1:
+                result_type,result_data = self._ldap.result(result_id, 0)
+                if result_data == []:
+                    break
+                else:
+                    if result_type == ldap.RES_SEARCH_ENTRY:
+                        result_set.append(result_data)
+            result = []
+            for entry in result_set:
+                dn = entry[0][0]
+                attrs = entry[0][1]
+                result.append(Entry(dn, attrs))
+            return result
 
-        value = self.get(attr, None)
+        except ldap.LDAPError, e:
+            raise LIDSError, "An LDAPError occurred: %s, %s, %s" % \
+                    (e, base_dn, filter)
 
-        ## XXX: need a more polymorphic way to check if the value is a
-        ##      sequence
-        if value.__class__ == list and len(value) == 1:
-            value = value[0]
+        return None
 
-        return value
+    def modify(self, dn, oldAttrs, newAttrs):
+        modlist = ldap.modlist.modifyModlist(oldAttrs, newAttrs)
+        try:
+            self._ldap.modify_s(dn, modlist)
+        except ldap.LDAPError, e:
+            raise LIDSError, "An LDAPError occurred: %s" % e
 
-    def modification(self, mod_dict):
-        l = []
-        for attr in mod_dict:
-            value = mod_dict[attr]
-            
-            action = ldap.MOD_REPLACE
-        
-            # If the entry doesn't already have this attribute, we need to
-            # be adding, rather than modifying
-            if not self.has_key(attr):
-                action = ldap.MOD_ADD
-
-            # If the value is our existing value, then we don't need to do
-            # anything
-            if value != self.get(attr, None):
-                l.append((action, attr, value))
-
-        # This is series of tupples in a list, formatted for the second 
-        # argument to ldap.modify.  This class doesn't actually touch ldap.
-        return l
+class Entry(object):
+    """
+    LDAP Entry
+    """
+    def __init__(self, dn, attributes):
+        """
+        Initialize new entry with DN and attributes
+        """
+        self.dn = dn
+        self.attributes = attributes
