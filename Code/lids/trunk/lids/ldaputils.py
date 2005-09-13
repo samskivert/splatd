@@ -32,7 +32,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import ldap, ldap.modlist
+import ldap, ldap.modlist, ldap.sasl
 import lids
 from lids import LIDSError
 
@@ -59,6 +59,13 @@ class Connection(object):
             self._ldap.simple_bind(bind_dn, password)
         except ldap.LDAPError, e:
             raise LIDSError, "An LDAPError occurred: %s" % e
+
+    def gssapi_bind(self, authz_id=''):
+        """
+        Initiate a GSSAPI (Kerberos 5) SASL bind.
+        @param authz_id: Kerberos principal. Omit to use your default principal.
+        """
+        self._ldap.sasl_interactive_bind_s('', ldap.sasl.gssapi(''))
 
     def search(self, base_dn, scope, filter, attributes=None):
         """ 

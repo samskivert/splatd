@@ -60,6 +60,12 @@ class ConnectionTestCase(unittest.TestCase):
     def test_simple_bind(self):
         self.conn.simple_bind(slapd.ROOTDN, slapd.ROOTPW)
 
+    def test_gssapi_bind(self):
+        # I am not crazy enough to try and automatically
+        # set up a local kerberos server to test this ...
+        # Force it to fail, validate the failure.
+        self.assertRaises(ldap.LOCAL_ERROR, self.conn.gssapi_bind,'big/failure@EXAMPLE.COM')
+
     def test_search(self):
         result = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)', ['uid',])
         self.assertEquals(result[0].attributes['uid'][0], 'john')
