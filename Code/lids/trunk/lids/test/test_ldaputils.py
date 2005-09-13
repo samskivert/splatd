@@ -61,6 +61,10 @@ class ConnectionTestCase(unittest.TestCase):
         self.conn.simple_bind(slapd.ROOTDN, slapd.ROOTPW)
 
     def test_gssapi_bind(self):
+        # If SASL support isn't available, skip the test.
+        if (not ldap.SASL_AVAIL):
+            raise unittest.SkipTest('LDAP SASL support unavailable, nothing to test')
+
         # I am not crazy enough to try and automatically
         # set up a local kerberos server to test this ...
         # Force it to fail, validate the failure.
