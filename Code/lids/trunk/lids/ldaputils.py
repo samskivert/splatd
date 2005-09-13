@@ -60,7 +60,7 @@ class Connection(object):
         except ldap.LDAPError, e:
             raise LIDSError, "An LDAPError occurred: %s" % e
 
-    def search(self, base_dn, scope, filter, attributes):
+    def search(self, base_dn, scope, filter, attributes=None):
         """ 
         Search the given base DN of the given LDAP server within
         the given scope (defaulting to subtree), applying
@@ -69,6 +69,7 @@ class Connection(object):
         @param base_dn: Search base DN.
         @param scope: Search scope. One of ldap.SCOPE_SUBTREE, ldap.SCOPE_BASE, or ldap.SCOPE_ONE
         @param filter: LDAP search filter.
+        @param attributes: Attributes to return. None causes all attributes to be returned. Defaults to None.
         """
         # Search the directory using the given base and filter, if we get
         # results, put them in a list, and hand off to SearchResults
@@ -95,10 +96,14 @@ class Connection(object):
 
         return None
 
-    def modify(self, dn, oldAttrs, newAttrs):
-        modlist = ldap.modlist.modifyModlist(oldAttrs, newAttrs)
+    def modify(self, mod):
+        """
+        Thin wrapper around ldap.LDAPObject.modify_s()
+        @param dn: Target DN
+        @param mod: Modification instance
+        """
         try:
-            self._ldap.modify_s(dn, modlist)
+            self._ldap.modify_s(mod.dn, mod.modlist)
         except ldap.LDAPError, e:
             raise LIDSError, "An LDAPError occurred: %s" % e
 
@@ -108,7 +113,43 @@ class Entry(object):
     """
     def __init__(self, dn, attributes):
         """
-        Initialize new entry with DN and attributes
+        Initialize new entry with DN and attributes.
         """
         self.dn = dn
         self.attributes = attributes
+
+class Modification(object):
+    """
+    LDAP Modification Description
+    """
+    def __init__(self, entry):
+        """
+        Initialize a new Modification object.
+        @param entry: Entry to modify
+        """
+        self.dn = entry.dn
+        self.modlist = []
+
+    def add(self, attribute, value):
+        """
+        Add a new attribute with value(s).
+        @param attribute: Attribute name.
+        @param value: A string value, or a list of values.
+        """
+        self.modlist.append((ldap.MOD_ADD, attribute, value))
+
+    def replace(self, attribute, value):
+        """
+        Replace an existing attribute value.
+        @param attribute: Attribute name.
+        @param value: A string value, or a list of values.
+        """
+        self.modlist.append((ldap.MOD_REPLACE, attribute, value))
+
+    def delete(self, attribute, value=None):
+        """
+        Delete an existing attribute.
+        @param attribute: Attribute name.
+        @param value: A string value, a list of values, or None (delete all instances of attribute). Defaults to None.
+        """
+        self.modlist.append((ldap.MOD_DELETE, attribute, value))

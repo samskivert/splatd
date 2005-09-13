@@ -70,23 +70,43 @@ class ConnectionTestCase(unittest.TestCase):
 
         # Find entry
         entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)', None)[0]
+        mod = ldaputils.Modification(entry)
 
-        mod = {}
-        mod.update(entry.attributes)
-        # Test MOD_REPLACE
-        mod['cn'] = "Test"
+        # Test MOD_REPLACE with multiple values ...
+        mod.replace('description', ['Test1', 'Test2'])
+
         # Test MOD_ADD
-        mod['street'] = "Test"
+        mod.add('street', 'Test')
+        # ... with multiple values
+        mod.add('mail', ['test1@example.com', 'test2@example.com'])
+
         # Test MOD_DELETE
-        mod.pop('loginShell')
+        mod.delete('loginShell')
+        # ... with a value specified
+        mod.delete('mail', 'johnalias@example.com')
+
         # Do modification
-        self.conn.modify(entry.dn, entry.attributes, mod)
+        self.conn.modify(mod)
 
         # Verify the result
-        entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)', ['cn', 'street'])[0]
-        self.assertEquals(entry.attributes.get('cn')[0], 'Test')
+        entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)', ['description', 'street', 'mail'])[0]
+        # We replaced all values of 'description'
+        self.assertEquals(len(entry.attributes.get('description')), 2)
+        self.assertEquals(entry.attributes.get('description')[0], 'Test1')
+        self.assertEquals(entry.attributes.get('description')[1], 'Test2')
+
+        # Added the street
         self.assertEquals(entry.attributes.get('street')[0], 'Test')
+
+        # There should be three values
+        self.assertEquals(len(entry.attributes.get('mail')), 3)
+        self.assertEquals(entry.attributes.get('mail')[0], 'john@example.com')
+        self.assertEquals(entry.attributes.get('mail')[1], 'test1@example.com')
+        self.assertEquals(entry.attributes.get('mail')[2], 'test2@example.com')
+
+        # loginShell was deleted
         self.assert_(not entry.attributes.has_key('loginShell'))
+
 
 class EntryTestCase(unittest.TestCase):
     """ Test LDAP Entry Objects """
@@ -101,3 +121,43 @@ class EntryTestCase(unittest.TestCase):
         result = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)', ['uid',])
         self.assertEquals(result[0].attributes['uid'][0], 'john')
         self.assertEquals(result[0].dn, 'uid=john,ou=People,dc=example,dc=com')
+
+
+class ModificationTestCase(unittest.TestCase):
+    """ Test LDAP Modification Objects """
+    def setUp(self):
+        self.slapd = slapd.LDAPServer()
+        self.conn = ldaputils.Connection(slapd.SLAPD_URI)
+        entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)')[0]
+        self.mod = ldaputils.Modification(entry)
+
+    def tearDown(self):
+        self.slapd.stop()
+
+    def test_add(self):
+        self.mod.add('uid', 'test')
+        self.assertEquals(self.mod.modlist, [(ldap.MOD_ADD, 'uid', 'test'),])
+        self.mod.add('uid', ['test1', 'test2'])
+        self.assertEquals(self.mod.modlist, [
+                (ldap.MOD_ADD, 'uid', 'test'),
+                (ldap.MOD_ADD, 'uid', ['test1', 'test2'])
+        ])
+
+    def test_replace(self):
+        self.mod.replace('uid', 'test')
+        self.assertEquals(self.mod.modlist, [(ldap.MOD_REPLACE, 'uid', 'test'),])
+        self.mod.replace('uid', ['test1', 'test2'])
+        self.assertEquals(self.mod.modlist, [
+                (ldap.MOD_REPLACE, 'uid', 'test'),
+                (ldap.MOD_REPLACE, 'uid', ['test1', 'test2'])
+        ])
+
+    def test_delete(self):
+        self.mod.delete('cn')
+        self.assertEquals(self.mod.modlist, [(ldap.MOD_DELETE, 'cn', None),])
+
+        self.mod.delete('cn', ['John Doe', 'John Doe II'])
+        self.assertEquals(self.mod.modlist, [
+                (ldap.MOD_DELETE, 'cn', None),
+                (ldap.MOD_DELETE, 'cn', ['John Doe', 'John Doe II'])
+        ])

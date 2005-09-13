@@ -56,6 +56,8 @@ givenName: John
 sn: Doe 
 cn: John Doe
 mail: john@example.com
+mail: johnalias@example.com
+description: John the Example Person
 loginShell: /bin/tcsh
 uidNumber: 10001
 gidNumber: 10001
@@ -73,6 +75,8 @@ givenName: Sally
 sn: Doe
 cn: Sally Doe
 mail: sally@example.com
+mail: sallyalias@example.com
+description: Sally the Example Person
 loginShell: /bin/tcsh
 uidNumber: 10002
 homeDirectory: /home/sally
