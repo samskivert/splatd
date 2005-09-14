@@ -4,7 +4,9 @@
 # A tool for managing SSH keys stored in LDAP
 # LDAP Information Distribution Suite
 #
-# Author: Will Barton <wbb4@opendarwin.org>
+# Authors:
+#       Will Barton <wbb4@opendarwin.org>
+#       Landon Fuller <landonf@threerings.net>
 #
 # Copyright (c) 2005 Three Rings Design, Inc.
 # All rights reserved.
@@ -34,37 +36,55 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import sys, logging, getopt
+import ZConfig
+
 import lids
+import ldap
+from lids import ldaputils
 
-def search(conf, section):
-    l = lids.search(conf, section)
-    for e in l:
-        print e.getAttribute("dn")
-        print e.getAttribute("uid")
-    
+# Useful constants ...
+LOG_NAME = "lids"
+
 def usage():
-    print "%s: [-v] [-s search section] [-f config file]" % sys.argv[0]
+    print "%s: [hXZ] [-f config file] [-D binddn]" % sys.argv[0]
+    print "    -h           Print usage (this message)"
+    print "    -X           Use GSSAPI instead of simple authentication"
+    print "    -Z           Issue StartTLS extended operation"
+    print "    -D <dn>      Bind with distinguished name"
+    print "    -f <config>  Use configuration file"
+    print "    -l <service> List matching entries for the specified service"
+    print "    -r <service> Run the helper for the specified service once"
 
-def push(conf, section):
-    lids.push(conf, section)
+def push(conn, config, section):
+    lids.push(config, section)
 
-def modify(conf, base_dn, modlist):
+def list(conn, config, service):
+    if (service.searchbase == None):
+        basedn = config.LDAP.basedn
+    else:
+        basedn = service.searchbase
+
+    res = conn.search(basedn, ldap.SCOPE_SUBTREE, service.searchfilter)
+    for entry in res:
+        print entry.dn
+
+def modify(config, base_dn, modlist):
     mod_dict = {}
     for mod in modlist:
         attr,value = mod.split("=",1)
         mod_dict[attr] = value
-    lids.modify(conf, base_dn, mod_dict)
+    lids.modify(config, base_dn, mod_dict)
 
 def main():
     action = None
-    section = None
-    base_dn = None
-    modlist = []
+    serviceName = None
+    bindDN = None
     conf_file = None
-    conf = {}
+    simple_bind = True
+    modlist = []
 
     try:
-        opts,args = getopt.getopt(sys.argv[1:], "hvs:f:p:d:m:")
+        opts,args = getopt.getopt(sys.argv[1:], "hXZD:f:l:r:")
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -73,43 +93,77 @@ def main():
         if opt == "-h":
             usage()
             sys.exit()
-        if opt == "-v": 
-            pass
-        if opt == "-s": 
-            action = "search"
-            section = arg
+        if opt == "-X":
+            simple_bind = False
+        if opt == "-D":
+            bindDN = arg
         if opt == "-f":
             conf_file = arg
-        if opt == "-p":
-            action = "push"
-            section = arg
-        if opt == "-d":
-            base_dn = arg
+        if opt == "-l": 
+            action = "list"
+            serviceName = arg
+        if opt == "-r":
+            action = "run"
+            serviceName = arg
         if opt == "-m":
             action = "modify"
             modlist.append(arg)
 
-    logger = logging.getLogger("lids")
+    if (conf_file == None):
+        usage()
+        sys.exit(1)
+
+    # Load our configuration schema
+    schema = ZConfig.loadSchema(lids.CONFIG_SCHEMA)
+    try:
+        config, handler = ZConfig.loadConfig(schema, conf_file)
+    except ZConfig.ConfigurationError, e:
+        print "Configuration Error: %s" % e
+        sys.exit(1)
+
+    # Set up logging
+    try:
+        config.Logging()
+    except Exception, e:
+        print "Log initialization failed: %s" % e
+        sys.exit(1)
+
+    logger = logging.getLogger(LOG_NAME)
+    # Add console logging
     console = logging.StreamHandler()
     formatter = logging.Formatter('%(asctime)s %(levelname)-6s %(message)s',
             '%Y%m%d %H:%M:%S')
     console.setLevel(logging.INFO)
     console.setFormatter(formatter)
+    console.setLevel(logging.INFO)
     logger.addHandler(console)
- 
+
+    # Set up LDAP Connection
     try:
-        # Set up the configuration
-        conf = lids.parse_config(conf_file)
-    except ValueError:
-        usage()
+        conn = ldaputils.Connection(config.LDAP.uri)
+        if (simple_bind == True):
+            conn.simple_bind(config.LDAP.binddn, config.LDAP.password)
+        else:
+            conn.gssapi_bind()
+    except lids.LIDSError, e:
+        print "Bind Failure: %s" % e
         sys.exit(1)
 
-    if action == "search":
-        search(conf, section)
+    if (action == "list" or action == "push"):
+        for service in config.Service:
+            if (service.name == serviceName):
+                break
+
+    if (service.name != serviceName):
+        print "No such service: %s" % serviceName
+        sys.exit(1)
+
+    if action == "list":
+        list(conn, config, service)
     elif action == "push":
-        push(conf, section)
+        push(conn, config, service)
     elif action == "modify" and base_dn:
-        modify(conf, base_dn, modlist)
+        modify(config, base_dn, modlist)
     else:
         usage()
         sys.exit(2)
