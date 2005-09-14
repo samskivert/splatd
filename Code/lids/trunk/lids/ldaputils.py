@@ -66,7 +66,7 @@ class Connection(object):
         @param authz_id: Kerberos principal. Omit to use your default principal.
         """
         try:
-            self._ldap.sasl_interactive_bind_s('', ldap.sasl.gssapi(''))
+            self._ldap.sasl_interactive_bind_s('', ldap.sasl.gssapi(authz_id))
         except ldap.LDAPError, e:
             raise LIDSError, "An LDAPError occurred: %s" % e
 
