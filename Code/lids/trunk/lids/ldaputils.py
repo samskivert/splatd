@@ -56,7 +56,7 @@ class Connection(object):
         """
 
         try:
-            self._ldap.simple_bind(bind_dn, password)
+            self._ldap.simple_bind_s(bind_dn, password)
         except ldap.LDAPError, e:
             raise LIDSError, "An LDAPError occurred: %s" % e
 
@@ -65,7 +65,10 @@ class Connection(object):
         Initiate a GSSAPI (Kerberos 5) SASL bind.
         @param authz_id: Kerberos principal. Omit to use your default principal.
         """
-        self._ldap.sasl_interactive_bind_s('', ldap.sasl.gssapi(''))
+        try:
+            self._ldap.sasl_interactive_bind_s('', ldap.sasl.gssapi(''))
+        except ldap.LDAPError, e:
+            raise LIDSError, "An LDAPError occurred: %s" % e
 
     def search(self, base_dn, scope, filter, attributes=None):
         """ 
