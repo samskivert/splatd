@@ -80,7 +80,7 @@ class ConnectionTestCase(unittest.TestCase):
 
         # Find entry
         entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)', None)[0]
-        mod = ldaputils.Modification(entry)
+        mod = ldaputils.Modification(entry.dn)
 
         # Test MOD_REPLACE with multiple values ...
         mod.replace('description', ['Test1', 'Test2'])
@@ -139,7 +139,7 @@ class ModificationTestCase(unittest.TestCase):
         self.slapd = slapd.LDAPServer()
         self.conn = ldaputils.Connection(slapd.SLAPD_URI)
         entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)')[0]
-        self.mod = ldaputils.Modification(entry)
+        self.mod = ldaputils.Modification(entry.dn)
 
     def tearDown(self):
         self.slapd.stop()

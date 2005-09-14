@@ -129,12 +129,12 @@ class Modification(object):
     """
     LDAP Modification Description
     """
-    def __init__(self, entry):
+    def __init__(self, dn):
         """
         Initialize a new Modification object.
-        @param entry: Entry to modify
+        @param dn: dn to modify
         """
-        self.dn = entry.dn
+        self.dn = dn
         self.modlist = []
 
     def add(self, attribute, value):
