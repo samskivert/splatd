@@ -34,10 +34,6 @@ import os
 
 __all__ = ['ldaputils', 'helpers', 'test']
 
-from functions import search, modify, push, parse_config, helper_attributes, bind
-from classes import SearchResult, Entry, Object, LIDSError
-from daemon import daemon
-
 # General Info
 __version__ = '0.5'
 __license__ = 'BSD License'
@@ -49,3 +45,7 @@ __copyright__ = 'Copyright (C) 2005 Three Rings Design, Inc. All rights reserved
 INSTALL_DIR = os.path.dirname(__file__)
 DATA_DIR = os.path.join(INSTALL_DIR, 'data')
 CONFIG_SCHEMA = os.path.join(DATA_DIR, "lids_conf.xml")
+
+# Exceptions
+class LIDSError(Exception):
+    pass

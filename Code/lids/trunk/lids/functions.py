@@ -36,7 +36,7 @@ import ldap
 import lids
 import helpers
 import classes
-from lids.classes import LIDSError
+from lids import LIDSError
 
 def parse_config(conffile):
     """ 

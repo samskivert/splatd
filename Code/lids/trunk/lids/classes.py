@@ -32,9 +32,6 @@
 
 import ldap
 
-class LIDSError(Exception):
-    pass
-
 class SearchResult(list):
     """ """
     # The result looks like:

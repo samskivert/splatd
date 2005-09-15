@@ -1,7 +1,10 @@
-# sshPublicKeys.py vi:ts=4:sw=4:expandtab:
+#!/usr/bin/env python
+# test_daemon.py vi:ts=4:sw=4:expandtab:
 #
-# LDAP SSH Public Key Helper.
-# Author: Will Barton <wbb4@opendarwin.org>
+# LDAP Information Distribution System
+# Authors:
+#       Landon Fuller <landonf@threerings.net>
+#       Will Barton <wbb4@opendarwin.org>
 #
 # Copyright (c) 2005 Three Rings Design, Inc.
 # All rights reserved.
@@ -30,48 +33,32 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-__author__ = "Will Barton"
+""" LIDS Daemon Unit Tests """
 
-import sys, os, logging
+from twisted.trial import unittest
 
+from lids import daemon 
 from lids import plugin
 
-import lids.classes
-import lids.functions
+from lids import ldaputils
 
-logger = logging.getLogger("lids")
+import test_plugin
+import slapd
 
-class Writer(plugin.Helper):
-    def work(self, ldapEntry):
-        home = ldapEntry.getAttribute("homeDirectory")
-        key = ldapEntry.getAttribute("sshPublicKey")
-        # Grab the key type from the string, "ssh-rsa ..."
-        key_type = key[4:7]
+# Useful Constants
+from lids.test import DATA_DIR
 
-        filename = "%s/.ssh/id_%s.pub" % (home, key_type)
-        contents = "%s" % key
-    
-        logger.info("Writing %s key to %s" % (key_type, filename))
+# Test Cases
+class ContextTestCase(unittest.TestCase):
+    """ Test LIDS Helper """
+    def setUp(self):
+        self.slapd = slapd.LDAPServer()
+        conn = ldaputils.Connection(slapd.SLAPD_URI)
+        self.ctx = daemon.Context(conn)
+        self.hc = plugin.HelperController('lids.test.test_plugin', 5, 'ou=People,dc=example,dc=com', '(uid=john)', None, None)
 
-        # Fork and seteuid to write the files
-        if not os.fork():
-            os.setgid(int(ldapEntry.getAttribute("gidNumber")))
-            os.setuid(int(ldapEntry.getAttribute("uidNumber")))
+    def tearDown(self):
+        self.slapd.stop()
 
-            # Make sure the directory exists
-            dir = os.path.split(filename)[0]
-            if not os.path.exists(dir): os.makedirs(dir)
-
-            f = open(filename, "w+")
-            f.write(contents)
-            f.close()
-            sys.exit()
-
-        os.wait()
-
-    # A list of modifyable attributes for this helper, 
-    # for interactive modifications (i.e. web interface)
-    def attributes(self, ldapEntry):
-        """ Return the modifyable attribues and their current values """
-        key = ldapEntry.getAttribute("sshPublicKey")
-        return {'sshPublicKey':key,}
+    def test_addHelper(self):
+        self.ctx.addHelper('test', self.hc)

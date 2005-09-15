@@ -34,7 +34,7 @@
 
 import os
 
-__all__ = ['test_ldaputils']
+__all__ = ['test_daemon', 'test_ldaputils', 'test_plugin']
 
 # Useful Constants
 INSTALL_DIR = os.path.dirname(__file__)

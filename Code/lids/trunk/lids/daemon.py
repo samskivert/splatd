@@ -37,10 +37,30 @@
 # lids.daemon(conf) is all that should be necessary to call, where conf
 # is a lids.parse_config()-parsed configuration file dictionary.
 
+from lids import plugin
+
 import functions
 import classes
 
 import os, sys, signal, sched, time, logging
+
+class Context(object):
+    # LIDS Daemon Context
+    def __init__(self, ldapConnection):
+        """
+        Initialize a LIDS Daemon context
+        @param ldapConnection: A connected instance of ldaputils.Connection
+        """
+        self.svc = {}
+        self.l = ldapConnection
+
+    def addHelper(self, name, controller):
+        """
+        Add a helper controller to the daemon context
+        @param name: Unique caller-assigned name. Helpers with non-unique names will overwrite previous additions.
+        @param controller: HelperController
+        """
+        self.svc[name] = controller
 
 #logger = logging.getLogger("lids")
 
