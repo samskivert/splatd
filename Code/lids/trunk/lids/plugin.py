@@ -37,6 +37,10 @@ from lids import LIDSError
 
 import types
 
+# Exceptions
+class LIDSPluginError(LIDSError):
+    pass
+
 class HelperController(object):
     def __init__(self, module, interval, searchBase, searchFilter, groupBase, groupFilter):
         """
@@ -65,7 +69,12 @@ class HelperController(object):
                     break
 
         if (self.helper == None):
-            raise LIDSError, "Helper module %s not loaded" % module
+            raise LIDSPluginError, "Helper module %s not found" % module
+
+        if (not hasattr(self.helper, "attributes")):
+            raise LIDSPluginError, "Helper missing required 'attributes' attribute."
+
+        self.searchAttr = self.helper.attributes
 
     def work(self, ldapEntry):
         """

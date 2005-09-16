@@ -75,3 +75,6 @@ class Writer(plugin.Helper):
         """ Return the modifyable attribues and their current values """
         key = ldapEntry.getAttribute("sshPublicKey")
         return {'sshPublicKey':key,}
+
+# Required Attributes
+Writer.attributes = ('sshPublicKey', 'homeDirectory', 'gidNumber', 'uidNumber')

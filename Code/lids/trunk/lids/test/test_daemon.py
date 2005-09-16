@@ -68,6 +68,8 @@ class MockHelper(plugin.Helper):
     def convert(self):
         pass
 
+MockHelper.attributes = ('uid',)
+
 # Test Cases
 class ContextTestCase(unittest.TestCase):
     """ Test LIDS Helper """

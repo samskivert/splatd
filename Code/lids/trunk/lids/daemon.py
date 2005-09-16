@@ -85,7 +85,7 @@ class Context(object):
         ctrl = self.svc[name]
 
         # XXX TODO LDAP scope && group filter support
-        entries = self.l.search(ctrl.searchBase, ldap.SCOPE_SUBTREE, ctrl.searchFilter)
+        entries = self.l.search(ctrl.searchBase, ldap.SCOPE_SUBTREE, ctrl.searchFilter, ctrl.searchAttr)
         for entry in entries:
             ctrl.work(entry)
 

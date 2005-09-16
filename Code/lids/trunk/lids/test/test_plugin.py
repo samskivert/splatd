@@ -53,6 +53,8 @@ class MockHelper(plugin.Helper):
     def convert(self):
         pass
 
+MockHelper.attributes = ('dn',)
+
 # Test Cases
 class HelperWithController(unittest.TestCase):
     """ Test LIDS Helper """
