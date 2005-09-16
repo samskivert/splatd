@@ -78,13 +78,6 @@ def list(conn, config, service):
     for entry in res:
         print entry.dn
 
-def modify(config, base_dn, modlist):
-    mod_dict = {}
-    for mod in modlist:
-        attr,value = mod.split("=",1)
-        mod_dict[attr] = value
-    lids.modify(config, base_dn, mod_dict)
-
 def main():
     action = None
     serviceName = None
@@ -115,9 +108,6 @@ def main():
         if opt == "-r":
             action = "run"
             serviceName = arg
-        if opt == "-m":
-            action = "modify"
-            modlist.append(arg)
 
     if (conf_file == None):
         usage()
@@ -159,10 +149,10 @@ def main():
         print "Bind Failure: %s" % e
         sys.exit(1)
 
-    if (action == "list" or action == "run"):
-        for service in config.Service:
-            if (service.name == serviceName):
-                break
+    # Find the specified service
+    for service in config.Service:
+        if (service.name == serviceName):
+            break
 
     if (service.name != serviceName):
         print "No such service: %s" % serviceName
@@ -172,8 +162,6 @@ def main():
         list(conn, config, service)
     elif action == "run":
         run(conn, config, service)
-    elif action == "modify" and base_dn:
-        modify(config, base_dn, modlist)
     else:
         usage()
         sys.exit(2)
