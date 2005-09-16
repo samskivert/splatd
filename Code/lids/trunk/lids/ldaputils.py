@@ -76,28 +76,21 @@ class Connection(object):
         """
         # Search the directory using the given base and filter, if we get
         # results, put them in a list, and hand off to SearchResults
-        try:
-            result_id = self._ldap.search(base_dn, scope, filter, attributes)
-            result_set = []
-            while 1:
-                result_type,result_data = self._ldap.result(result_id, 0)
-                if result_data == []:
-                    break
-                else:
-                    if result_type == ldap.RES_SEARCH_ENTRY:
-                        result_set.append(result_data)
-            result = []
-            for entry in result_set:
-                dn = entry[0][0]
-                attrs = entry[0][1]
-                result.append(Entry(dn, attrs))
-            return result
-
-        except ldap.LDAPError, e:
-            raise LIDSError, "An LDAPError occurred: %s, %s, %s" % \
-                    (e, base_dn, filter)
-
-        return None
+        result_id = self._ldap.search(base_dn, scope, filter, attributes)
+        result_set = []
+        while 1:
+            result_type,result_data = self._ldap.result(result_id, 0)
+            if result_data == []:
+                break
+            else:
+                if result_type == ldap.RES_SEARCH_ENTRY:
+                    result_set.append(result_data)
+        result = []
+        for entry in result_set:
+            dn = entry[0][0]
+            attrs = entry[0][1]
+            result.append(Entry(dn, attrs))
+        return result
 
     def modify(self, mod):
         """
@@ -105,10 +98,7 @@ class Connection(object):
         @param dn: Target DN
         @param mod: Modification instance
         """
-        try:
-            self._ldap.modify_s(mod.dn, mod.modlist)
-        except ldap.LDAPError, e:
-            raise LIDSError, "An LDAPError occurred: %s" % e
+        self._ldap.modify_s(mod.dn, mod.modlist)
 
 class Entry(object):
     """

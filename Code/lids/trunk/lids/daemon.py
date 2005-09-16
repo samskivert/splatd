@@ -85,7 +85,12 @@ class Context(object):
         ctrl = self.svc[name]
 
         # XXX TODO LDAP scope && group filter support
-        entries = self.l.search(ctrl.searchBase, ldap.SCOPE_SUBTREE, ctrl.searchFilter, ctrl.searchAttr)
+        try:
+            entries = self.l.search(ctrl.searchBase, ldap.SCOPE_SUBTREE, ctrl.searchFilter, ctrl.searchAttr)
+        except ldap.LDAPError, e:
+            # XXX TODO Log LDAP error
+            return
+
         for entry in entries:
             ctrl.work(entry)
 
@@ -105,9 +110,6 @@ class Context(object):
         for name, ctrl in self.svc.items():
                 self._invokeHelper(name)
 
-
-import functions
-import classes
 
 import os, sys, signal, sched, time, logging
 

@@ -80,7 +80,12 @@ class HelperController(object):
         """
         Pass LDAP Entry to the controlled worker
         """
-        return self.helper.work(ldapEntry)
+        try:
+            result = self.helper.work(ldapEntry)
+        except Exception, e:
+            raise LIDSPluginError, "Helper module execution failed: %s", e
+
+        return result
 
 
 class Helper(object):
