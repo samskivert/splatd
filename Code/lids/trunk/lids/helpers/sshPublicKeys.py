@@ -43,8 +43,16 @@ logger = logging.getLogger("lids")
 
 class Writer(plugin.Helper):
     def work(self, ldapEntry):
-        home = ldapEntry.getAttribute("homeDirectory")
-        key = ldapEntry.getAttribute("sshPublicKey")
+        attributes = ldapEntry.attributes
+
+        # Test for required attributes
+        if (not attributes.has_key('sshPublicKey') or not attributes.has_key('homeDirectory')):
+            return
+        if (not attributes.has_key('uidNumber') or not attributes.has_key('gidNumber')):
+            return
+
+        home = attributes.get("homeDirectory")[0]
+        key = attributes.get("sshPublicKey")[0]
         # Grab the key type from the string, "ssh-rsa ..."
         key_type = key[4:7]
 
@@ -55,8 +63,8 @@ class Writer(plugin.Helper):
 
         # Fork and seteuid to write the files
         if not os.fork():
-            os.setgid(int(ldapEntry.getAttribute("gidNumber")))
-            os.setuid(int(ldapEntry.getAttribute("uidNumber")))
+            os.setgid(int(attributes.get("gidNumber")[0]))
+            os.setuid(int(attributes.get("uidNumber")[0]))
 
             # Make sure the directory exists
             dir = os.path.split(filename)[0]
@@ -73,7 +81,7 @@ class Writer(plugin.Helper):
     # for interactive modifications (i.e. web interface)
     def attributes(self, ldapEntry):
         """ Return the modifyable attribues and their current values """
-        key = ldapEntry.getAttribute("sshPublicKey")
+        key = ldapEntry.attributes.get("sshPublicKey")
         return {'sshPublicKey':key,}
 
 # Required Attributes

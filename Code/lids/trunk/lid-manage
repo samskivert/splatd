@@ -38,9 +38,10 @@
 import sys, logging, getopt
 import ZConfig
 
-import lids
 import ldap
-from lids import ldaputils
+
+import lids
+from lids import ldaputils, daemon, plugin
 
 # Useful constants ...
 LOG_NAME = "lids"
@@ -55,8 +56,17 @@ def usage():
     print "    -l <service> List matching entries for the specified service"
     print "    -r <service> Run the helper for the specified service once"
 
-def push(conn, config, section):
-    lids.push(config, section)
+def run(conn, config, service):
+    if (service.searchbase == None):
+        basedn = config.LDAP.basedn
+    else:
+        basedn = service.searchbase
+
+    hc = plugin.HelperController(service.helper, service.frequency, service.searchbase,
+            service.searchfilter, service.groupbase, service.groupfilter)
+    ctx = daemon.Context(conn)
+    ctx.addHelper(service.name, hc)
+    ctx.run()
 
 def list(conn, config, service):
     if (service.searchbase == None):
@@ -149,7 +159,7 @@ def main():
         print "Bind Failure: %s" % e
         sys.exit(1)
 
-    if (action == "list" or action == "push"):
+    if (action == "list" or action == "run"):
         for service in config.Service:
             if (service.name == serviceName):
                 break
@@ -160,8 +170,8 @@ def main():
 
     if action == "list":
         list(conn, config, service)
-    elif action == "push":
-        push(conn, config, service)
+    elif action == "run":
+        run(conn, config, service)
     elif action == "modify" and base_dn:
         modify(config, base_dn, modlist)
     else:
