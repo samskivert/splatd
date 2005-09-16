@@ -1,7 +1,9 @@
 # daemon.py vi:ts=4:sw=4:expandtab:
 #
 # LIDS Daemon Support.
-# Author: Will Barton <wbb4@opendarwin.org>
+# Author:
+#       Will Barton <wbb4@opendarwin.org>
+#       Landon Fuller <landonf@threerings.net>
 #
 # Copyright (c) 2005 Three Rings Design, Inc.
 # All rights reserved.
