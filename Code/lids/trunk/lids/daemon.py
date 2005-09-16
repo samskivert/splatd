@@ -35,15 +35,13 @@
 # This file contains everything necessary to run a Daemon that
 # distributes information from LDAP using helper classes based on the
 # frequency specification of sections in a lid.conf file.
-#
-# lids.daemon(conf) is all that should be necessary to call, where conf
-# is a lids.parse_config()-parsed configuration file dictionary.
 
+import lids
 from lids import plugin
 
 from twisted.internet import reactor, task
 
-import ldap
+import ldap, logging
 
 class Context(object):
     # LIDS Daemon Context
@@ -83,16 +81,21 @@ class Context(object):
             return
 
         ctrl = self.svc[name]
+        logger = logging.getLogger(lids.LOG_NAME)
 
         # XXX TODO LDAP scope && group filter support
         try:
             entries = self.l.search(ctrl.searchBase, ldap.SCOPE_SUBTREE, ctrl.searchFilter, ctrl.searchAttr)
         except ldap.LDAPError, e:
-            # XXX TODO Log LDAP error
+            logger.error("LDAP Search error for helper %s: %s" % (name, e))
             return
 
         for entry in entries:
-            ctrl.work(entry)
+            try:
+                ctrl.work(entry)
+            except lids.LIDSError, e:
+                logger.error("Helper invocation for '%s' failed with error: %s" % (name, e))
+                continue
 
     def start(self, once = False):
         """

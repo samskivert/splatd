@@ -145,8 +145,14 @@ def main():
             conn.simple_bind(config.LDAP.binddn, config.LDAP.password)
         else:
             conn.gssapi_bind()
-    except lids.LIDSError, e:
-        print "Bind Failure: %s" % e
+    except ldap.INVALID_CREDENTIALS:
+        print "Authentication failed for server: %s" % config.LDAP.uri
+        sys.exit(1)
+    except ldap.NO_SUCH_OBJECT:
+        print "Authentication failed for server: %s, no such object. Is your Bind DN correct?"
+        sys.exit(1)
+    except ldap.SERVER_DOWN:
+        print "Could not contact server: %s" % config.LDAP.uri
         sys.exit(1)
 
     # Find the specified service

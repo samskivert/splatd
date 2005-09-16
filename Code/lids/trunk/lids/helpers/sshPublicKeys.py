@@ -34,12 +34,10 @@ __author__ = "Will Barton"
 
 import sys, os, logging
 
+import lids
 from lids import plugin
 
-import lids.classes
-import lids.functions
-
-logger = logging.getLogger("lids")
+logger = logging.getLogger(lids.LOG_NAME)
 
 class Writer(plugin.Helper):
     def work(self, ldapEntry):
@@ -63,16 +61,26 @@ class Writer(plugin.Helper):
 
         # Fork and seteuid to write the files
         if not os.fork():
-            os.setgid(int(attributes.get("gidNumber")[0]))
-            os.setuid(int(attributes.get("uidNumber")[0]))
+            try:
+                os.setgid(int(attributes.get("gidNumber")[0]))
+                os.setuid(int(attributes.get("uidNumber")[0]))
+            except OSError, e:
+                raise plugin.LIDSPluginError, "Failed to drop privileges, %s" % e
 
-            # Make sure the directory exists
-            dir = os.path.split(filename)[0]
-            if not os.path.exists(dir): os.makedirs(dir)
+            try:
+                # Make sure the directory exists
+                dir = os.path.split(filename)[0]
+                if not os.path.exists(dir): os.makedirs(dir)
+            except OSError, e:
+                raise plugin.LIDSPluginError, "Failed to create SSH directory '%s', %s" % (dir, e)
 
-            f = open(filename, "w+")
-            f.write(contents)
-            f.close()
+            try:
+                f = open(filename, "w+")
+                f.write(contents)
+                f.close()
+            except IOError, e:
+                raise plugin.LIDSPluginError, "Failed to write SSH key, %s" % (e)
+
             sys.exit()
 
         os.wait()
