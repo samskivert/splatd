@@ -39,10 +39,9 @@
 
 from lids import plugin
 
-import functions
-import classes
+from twisted.internet import reactor, task
 
-import os, sys, signal, sched, time, logging
+import ldap
 
 class Context(object):
     # LIDS Daemon Context
@@ -52,6 +51,7 @@ class Context(object):
         @param ldapConnection: A connected instance of ldaputils.Connection
         """
         self.svc = {}
+        self.tasks = {}
         self.l = ldapConnection
 
     def addHelper(self, name, controller):
@@ -61,6 +61,49 @@ class Context(object):
         @param controller: HelperController
         """
         self.svc[name] = controller
+
+    def removeHelper(self, name):
+        """
+        From a helper controller from the daemon context
+        @param name: Unique caller-assigned name.
+        """
+        # Stop the task, if started, and delete the associated entry
+        if (self.tasks.has_key(name)):
+            self.tasks[name].stop()
+            self.tasks.pop(name)
+
+        # Delete the controller entry
+        self.svc.pop(name)
+
+    def _invokeHelper(self, name):
+        # Has helper been removed?
+        if (not self.svc.has_key(name)):
+            return
+
+        ctrl = self.svc[name]
+
+        # XXX TODO LDAP scope && group filter support
+        entries = self.l.search(ctrl.searchBase, ldap.SCOPE_SUBTREE, ctrl.searchFilter)
+        for entry in entries:
+            ctrl.work(entry)
+
+    def start(self, once = False):
+        """
+        Add the daemon context to the twisted runloop
+        @param once: Run only once. Defaults to false.
+        """
+        for name, ctrl in self.svc.items():
+            if (once):
+                self._invokeHelper(name)
+            else:
+                t = task.LoopingCall(self._invokeHelper, name)
+                t.start(ctrl.interval)
+                self.tasks[name] = t
+
+import functions
+import classes
+
+import os, sys, signal, sched, time, logging
 
 #logger = logging.getLogger("lids")
 

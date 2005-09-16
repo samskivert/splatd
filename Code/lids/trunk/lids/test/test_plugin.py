@@ -59,4 +59,4 @@ class HelperWithController(unittest.TestCase):
 
     def test_initialize(self):
         hc = plugin.HelperController('lids.test.test_plugin', 5, 'dc=example,dc=com', '(uid=john)', None, None)
-        self.assert_(hc.helper.work(None))
+        self.assert_(hc.work(None))

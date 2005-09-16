@@ -36,10 +36,10 @@
 """ LIDS Daemon Unit Tests """
 
 from twisted.trial import unittest
+from twisted.internet import reactor
 
 from lids import daemon 
 from lids import plugin
-
 from lids import ldaputils
 
 import test_plugin
@@ -48,6 +48,26 @@ import slapd
 # Useful Constants
 from lids.test import DATA_DIR
 
+# Mock Helper
+class MockHelper(plugin.Helper):
+    def __init__(self):
+        super(plugin.Helper, self).__init__()
+        self.done = False
+        self.failure = None
+
+    def work(self, ldapEntry):
+        uid = ldapEntry.attributes['uid'][0]
+        if(uid != 'john'):
+            self.failure = "Incorrect LDAP attribute returned (Wanted: 'john', Got: '%s')" % uid
+            self.done = True
+        self.done = True
+
+    def modify(self, ldapEntry, modifyList):
+        pass
+
+    def convert(self):
+        pass
+
 # Test Cases
 class ContextTestCase(unittest.TestCase):
     """ Test LIDS Helper """
@@ -55,10 +75,70 @@ class ContextTestCase(unittest.TestCase):
         self.slapd = slapd.LDAPServer()
         conn = ldaputils.Connection(slapd.SLAPD_URI)
         self.ctx = daemon.Context(conn)
-        self.hc = plugin.HelperController('lids.test.test_plugin', 5, 'ou=People,dc=example,dc=com', '(uid=john)', None, None)
+        self.hc = plugin.HelperController('lids.test.test_daemon', 1, 'ou=People,dc=example,dc=com', '(uid=john)', None, None)
+
+        self.done = False
+        self.failure = None
 
     def tearDown(self):
         self.slapd.stop()
 
+    def succeeded(self):
+        self.done = True
+
+    def failed(self, why):
+        self.failure = why
+
     def test_addHelper(self):
         self.ctx.addHelper('test', self.hc)
+
+    def test_removeHelper(self):
+        # Remove an unstarted task
+        self.ctx.addHelper('test', self.hc)
+        self.ctx.removeHelper('test')
+
+        # Remove a started task
+        self.ctx.addHelper('test', self.hc)
+        self.ctx.start()
+        self.ctx.removeHelper('test')
+
+    def test_startonce(self):
+        self.ctx.addHelper('test', self.hc)
+        self.ctx.start(True)
+
+        # Add a timeout
+        timeout = reactor.callLater(5, self.failed, "timeout")
+
+        # Wait for the work method to be called, or for a timeout to occur
+        while (not self.hc.helper.done or self.failure):
+            reactor.iterate(0.1)
+
+        timeout.cancel()
+
+        if (self.failure):
+            self.fail(self.failure)
+
+        if (self.hc.helper.failure):
+            self.fail(self.hc.helper.failure)
+
+    def test_start(self):
+        self.ctx.addHelper('test', self.hc)
+        self.ctx.start()
+
+        # Add a timeout
+        timeout = reactor.callLater(5, self.failed, "timeout")
+
+        # Wait for the work method to be called, or for a timeout to occur
+        while (not self.hc.helper.done or self.failure):
+            reactor.iterate(0.1)
+
+        timeout.cancel()
+
+        # Kill the task
+        self.ctx.removeHelper('test')
+
+        if (self.failure):
+            self.fail(self.failure)
+
+        if (self.hc.helper.failure):
+            self.fail(self.hc.helper.failure)

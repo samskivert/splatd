@@ -67,6 +67,12 @@ class HelperController(object):
         if (self.helper == None):
             raise LIDSError, "Helper module %s not loaded" % module
 
+    def work(self, ldapEntry):
+        """
+        Pass LDAP Entry to the controlled worker
+        """
+        return self.helper.work(ldapEntry)
+
 
 class Helper(object):
     """
