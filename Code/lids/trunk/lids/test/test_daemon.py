@@ -102,21 +102,9 @@ class ContextTestCase(unittest.TestCase):
         self.ctx.start()
         self.ctx.removeHelper('test')
 
-    def test_startonce(self):
+    def test_run(self):
         self.ctx.addHelper('test', self.hc)
-        self.ctx.start(True)
-
-        # Add a timeout
-        timeout = reactor.callLater(5, self.failed, "timeout")
-
-        # Wait for the work method to be called, or for a timeout to occur
-        while (not self.hc.helper.done or self.failure):
-            reactor.iterate(0.1)
-
-        timeout.cancel()
-
-        if (self.failure):
-            self.fail(self.failure)
+        self.ctx.run()
 
         if (self.hc.helper.failure):
             self.fail(self.hc.helper.failure)

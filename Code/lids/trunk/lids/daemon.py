@@ -90,15 +90,19 @@ class Context(object):
     def start(self, once = False):
         """
         Add the daemon context to the twisted runloop
-        @param once: Run only once. Defaults to false.
         """
         for name, ctrl in self.svc.items():
-            if (once):
+            t = task.LoopingCall(self._invokeHelper, name)
+            t.start(ctrl.interval)
+            self.tasks[name] = t
+
+    def run(self):
+        """
+        Run the associated helper tasks once
+        """
+        for name, ctrl in self.svc.items():
                 self._invokeHelper(name)
-            else:
-                t = task.LoopingCall(self._invokeHelper, name)
-                t.start(ctrl.interval)
-                self.tasks[name] = t
+
 
 import functions
 import classes
