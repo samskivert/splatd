@@ -43,9 +43,6 @@ import ldap
 import lids
 from lids import ldaputils, daemon, plugin
 
-# Useful constants ...
-LOG_NAME = "lids"
-
 def usage():
     print "%s: [hXZ] [-f config file] [-D binddn]" % sys.argv[0]
     print "    -h           Print usage (this message)"
@@ -128,7 +125,7 @@ def main():
         print "Log initialization failed: %s" % e
         sys.exit(1)
 
-    logger = logging.getLogger(LOG_NAME)
+    logger = logging.getLogger(lids.LOG_NAME)
     # Add console logging
     console = logging.StreamHandler()
     formatter = logging.Formatter('%(asctime)s %(levelname)-6s %(message)s',

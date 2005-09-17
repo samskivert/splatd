@@ -42,7 +42,7 @@ __author_email__ = 'dpw@threerings.net'
 __copyright__ = 'Copyright (C) 2005 Three Rings Design, Inc. All rights reserved.'
 
 # Useful Constants
-LOG_NAME = 'lids'
+LOG_NAME = 'lids:'
 INSTALL_DIR = os.path.dirname(__file__)
 DATA_DIR = os.path.join(INSTALL_DIR, 'data')
 CONFIG_SCHEMA = os.path.join(DATA_DIR, "lids_conf.xml")
