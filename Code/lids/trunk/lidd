@@ -148,23 +148,15 @@ def daemonize(config):
     else:
         os._exit(0)
 
-    try:
-        maxfd = os.sysconf("SC_OPEN_MAX")
-    except (AttributeError, ValueError):
-        maxfd = 256
 
-    for fd in range(0, maxfd):
-        try:
-            os.close(fd)
-        except OSError:
-            pass
+    # Redirect stdin, stdout, and stderr to _PATH_DEVNULL
+    null = os.open('/dev/null', os.O_RDWR)
+    os.dup2(null, sys.stdout.fileno())
+    os.dup2(null, sys.stdin.fileno())
+    os.dup2(null, sys.stderr.fileno())
 
-    os.open("/dev/null", os.O_RDONLY)   # stdin
-    os.open("/dev/null", os.O_RDWR)     # stdout
-    os.open("/dev/null", os.O_RDWR)     # stderr
-
-    # Re-configure logging
-    config.Logging()
+    if (null > 3):
+        os.close(null)
 
     logger.debug("Finished daemonizing")
 
