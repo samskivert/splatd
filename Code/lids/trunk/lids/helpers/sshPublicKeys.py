@@ -47,13 +47,24 @@ SSH_ERR_MKDIR = 3
 SSH_ERR_WRITE = 4
 
 class Writer(plugin.Helper):
+    def __init__(self):
+        self.minuid = None
+        self.mingid = None
+        self.home = None
+
     def setOptions(self, options):
         for key in options.keys():
             if (key == "home"):
-                self.home = options[key]
+                self.home = os.path.abspath(options[key])
+                self.splitHome = self.home.split('/')
+                if (self.splitHome[0] != ''):
+                    raise plugin.LIDSPluginError, "Relative paths for the home option are not permitted"
                 continue
             if (key == "minuid"):
                 self.minuid = int(options[key])
+                continue
+            if (key == "mingid"):
+                self.mingid = int(options[key])
                 continue
             raise plugin.LIDSPluginError, "Invalid option '%s' specified." % key
 
@@ -68,6 +79,29 @@ class Writer(plugin.Helper):
 
         home = attributes.get("homeDirectory")[0]
         key = attributes.get("sshPublicKey")[0]
+        uid = int(attributes.get("uidNumber")[0])
+        gid = int(attributes.get("gidNumber")[0])
+
+        # Validate the home directory
+        if (self.home != None):
+            givenPath = os.path.abspath(home).split('/')
+            if (len(givenPath) < len(self.splitHome)):
+                raise plugin.LIDSPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, self.home, ldapEntry.dn)
+
+            for i in range(0, len(self.splitHome)):
+                if (self.splitHome[i] != givenPath[i]):
+                    raise plugin.LIDSPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, self.home, ldapEntry.dn)
+
+        # Validate the UID
+        if (self.minuid != None):
+            if (self.minuid >= uid):
+                raise plugin.LIDSPluginError, "LDAP Server returned uid %d less than specified minimum uid of %d for entry '%s'" % (uid, self.minuid, ldapEntry.dn)
+        # Validate the GID
+        if (self.mingid != None):
+            if (self.mingid >= gid):
+                raise plugin.LIDSPluginError, "LDAP Server returned gid %d less than specified minimum gid of %d for entry '%s'" % (gid, self.mingid, ldapEntry.dn)
+
+
         # Grab the key type from the string, "ssh-rsa ..."
         key_type = key[4:7]
 
