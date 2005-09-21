@@ -74,25 +74,24 @@ def main():
         print "Configuration Error: %s" % e
         sys.exit(1)
 
-    # Set up logging
-    try:
-        config.Logging()
-    except Exception, e:
-        print "Log initialization failed: %s" % e
-        sys.exit(1)
+    # Daemonize
+    daemonize(config)
+
+    # Acquire our logger
+    logger = logging.getLogger(lids.LOG_NAME)
 
     # Set up the daemon context 
     try:
         conn = ldaputils.Connection(config.LDAP.uri)
         conn.simple_bind(config.LDAP.binddn, config.LDAP.password)
     except ldap.INVALID_CREDENTIALS:
-        print "Authentication failed for server: %s" % config.LDAP.uri
+        logger.critical("Authentication failed for server: %s", config.LDAP.uri)
         sys.exit(1)
     except ldap.NO_SUCH_OBJECT:
-        print "Authentication failed for server: %s, no such object. Is your Bind DN correct?"
+        logger.critical("Authentication failed for server: %s, no such object. Is your Bind DN correct?", config.LDAP.uri)
         sys.exit(1)
     except ldap.SERVER_DOWN:
-        print "Could not contact server: %s" % config.LDAP.uri
+        logger.critical("Could not contact server: %s", config.LDAP.uri)
         sys.exit(1)
 
     ctx = daemon.Context(conn)
@@ -103,9 +102,6 @@ def main():
                 service.searchfilter, service.groupbase, service.groupfilter)
         ctx.addHelper(service.getSectionName(), hc)
 
-    # Daemonize
-    daemonize(config)
-
     # Add our daemon context to the runloop
     ctx.start()
 
@@ -114,10 +110,47 @@ def main():
 
 def daemonize(config):
     """ Detach a process from the terminal and run it as a daemon """
-    logger = logging.getLogger(lids.LOG_NAME)
-
+    # Close all open files.
     try:
-        logger.info("LIDS Starting up...")
+        maxfd = os.sysconf("SC_OPEN_MAX")
+    except (AttributeError, ValueError):
+        maxfd = 1024       # default maximum
+
+    # Avoid closing stdout/stdin/stderr so we can still print a log
+    # initialization error message ...
+    stdin = sys.stdin.fileno()
+    stdout = sys.stdout.fileno()
+    stderr = sys.stdout.fileno()
+
+    for fd in range(0, maxfd):
+        try:
+            if (fd != stdout and fd != stderr and fd != stdin):
+                os.close(fd)
+        except OSError:
+            # Ignore EBADF
+            pass
+
+    # Set up logging
+    try:
+        config.Logging()
+    except Exception, e:
+        print "Log initialization failed: %s" % e
+        sys.exit(1)
+
+    # Redirect stdin, stdout, and stderr to /dev/null
+    null = os.open('/dev/null', os.O_RDWR)
+    os.dup2(null, stdin)
+    os.dup2(null, stdout)
+    os.dup2(null, stderr)
+
+    if (null > 2):
+        os.close(null)
+
+    logger = logging.getLogger(lids.LOG_NAME)
+    logger.info("LIDS Starting up...")
+
+    # Detach the daemon
+    try:
         pid = os.fork()
     except OSError, e:
         logger.critical("An OSError occurred in daemonize(): %s", e)
@@ -134,7 +167,6 @@ def daemonize(config):
         try:
             # second child to prevent zombies
             pid = os.fork()
-            logger = logging.getLogger(lids.LOG_NAME)
         except OSError, e:
             logger.critical("An OSError occurred in daemonize(): %s", e)
             sys.exit(1)
@@ -147,18 +179,6 @@ def daemonize(config):
             os._exit(0)
     else:
         os._exit(0)
-
-
-    # Redirect stdin, stdout, and stderr to _PATH_DEVNULL
-    null = os.open('/dev/null', os.O_RDWR)
-    os.dup2(null, sys.stdout.fileno())
-    os.dup2(null, sys.stdin.fileno())
-    os.dup2(null, sys.stderr.fileno())
-
-    if (null > 2):
-        os.close(null)
-
-    logger.debug("Finished daemonizing")
 
     return 0
 
