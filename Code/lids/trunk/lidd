@@ -101,7 +101,7 @@ def main():
     for service in config.Service:
         hc = plugin.HelperController(service.helper, service.frequency, service.searchbase,
                 service.searchfilter, service.groupbase, service.groupfilter)
-        ctx.addHelper(service.name, hc)
+        ctx.addHelper(service.getSectionName(), hc)
 
     # Daemonize
     daemonize(config)

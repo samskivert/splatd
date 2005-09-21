@@ -62,7 +62,7 @@ def run(conn, config, service):
     hc = plugin.HelperController(service.helper, service.frequency, service.searchbase,
             service.searchfilter, service.groupbase, service.groupfilter)
     ctx = daemon.Context(conn)
-    ctx.addHelper(service.name, hc)
+    ctx.addHelper(service.getSectionName(), hc)
     ctx.run()
 
 def list(conn, config, service):
@@ -154,10 +154,10 @@ def main():
 
     # Find the specified service
     for service in config.Service:
-        if (service.name == serviceName):
+        if (service.getSectionName() == serviceName):
             break
 
-    if (service.name != serviceName):
+    if (service.getSectionName() != serviceName):
         print "No such service: %s" % serviceName
         sys.exit(1)
 
