@@ -155,7 +155,7 @@ def daemonize(config):
     os.dup2(null, sys.stdin.fileno())
     os.dup2(null, sys.stderr.fileno())
 
-    if (null > 3):
+    if (null > 2):
         os.close(null)
 
     logger.debug("Finished daemonizing")
