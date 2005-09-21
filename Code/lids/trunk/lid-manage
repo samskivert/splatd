@@ -54,13 +54,23 @@ def usage():
     print "    -r <service> Run the helper for the specified service once"
 
 def run(conn, config, service):
+    options = {}
+
     if (service.searchbase == None):
         basedn = config.LDAP.basedn
     else:
         basedn = service.searchbase
 
-    hc = plugin.HelperController(service.helper, service.frequency, service.searchbase,
-            service.searchfilter, service.groupbase, service.groupfilter)
+    for opt in service.Option:
+        options[opt.getSectionName()] = opt.value
+
+    try:
+        hc = plugin.HelperController(service.helper, service.frequency, service.searchbase,
+                service.searchfilter, service.groupbase, service.groupfilter, options)
+    except plugin.LIDSPluginError, e:
+        print "Error initializing service '%s': %s" % (service.getSectionName(), e)
+        return
+
     ctx = daemon.Context(conn)
     ctx.addHelper(service.getSectionName(), hc)
     ctx.run()

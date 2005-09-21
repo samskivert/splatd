@@ -13,6 +13,9 @@
     <section type="LDAP" name="*" attribute="LDAP" required="yes"/>
 
     <!-- Services Configuration -->
+    <sectiontype name="Option" required="no">
+        <key name="Value" required="yes"/>
+    </sectiontype>
     <sectiontype name="Service">
         <key name="SearchBase" required="no"/>
         <key name="SearchFilter" required="yes"/>
@@ -20,6 +23,7 @@
         <key name="GroupFilter" required="no"/>
         <key name="Helper" required="yes"/>
         <key name="Frequency" datatype="time-interval" required="yes"/>
+        <multisection type="Option" name="+" attribute="Option" required="no"/>
     </sectiontype>
     <multisection type="Service" name="+" attribute="Service" required="no"/>
 

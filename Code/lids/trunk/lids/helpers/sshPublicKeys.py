@@ -47,6 +47,16 @@ SSH_ERR_MKDIR = 3
 SSH_ERR_WRITE = 4
 
 class Writer(plugin.Helper):
+    def setOptions(self, options):
+        for key in options.keys():
+            if (key == "home"):
+                self.home = options[key]
+                continue
+            if (key == "minuid"):
+                self.minuid = int(options[key])
+                continue
+            raise plugin.LIDSPluginError, "Invalid option '%s' specified." % key
+
     def work(self, ldapEntry):
         attributes = ldapEntry.attributes
 

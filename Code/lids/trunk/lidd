@@ -98,8 +98,19 @@ def main():
 
     # Load all service helpers
     for service in config.Service:
-        hc = plugin.HelperController(service.helper, service.frequency, service.searchbase,
-                service.searchfilter, service.groupbase, service.groupfilter)
+        options = {}
+
+        # Set up service options
+        for opt in service.Option:
+            options[opt.getSectionName()] = opt.value
+
+        try:
+            hc = plugin.HelperController(service.helper, service.frequency, service.searchbase,
+                    service.searchfilter, service.groupbase, service.groupfilter, options)
+        except plugin.LIDSPluginError, e:
+            logger.critical("Error initializing service '%s': %s", service.getSectionName(), e)
+            sys.exit(1)
+
         ctx.addHelper(service.getSectionName(), hc)
 
     # Add our daemon context to the runloop

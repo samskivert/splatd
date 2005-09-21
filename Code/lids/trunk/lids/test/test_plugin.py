@@ -44,6 +44,9 @@ from lids.test import DATA_DIR
 
 # Mock Helper
 class MockHelper(plugin.Helper):
+    def setOptions(self, options):
+        assert(options['test'] == 'value')
+
     def work(self, ldapEntry):
         return True
 
@@ -59,6 +62,9 @@ MockHelper.attributes = ('dn',)
 class HelperWithController(unittest.TestCase):
     """ Test LIDS Helper """
 
-    def test_initialize(self):
-        hc = plugin.HelperController('lids.test.test_plugin', 5, 'dc=example,dc=com', '(uid=john)', None, None)
-        self.assert_(hc.work(None))
+    def setUp(self):
+        options = {'test':'value'}
+        self.hc = plugin.HelperController('lids.test.test_plugin', 5, 'dc=example,dc=com', '(uid=john)', None, None, options)
+
+    def test_work(self):
+        self.assert_(self.hc.work(None))

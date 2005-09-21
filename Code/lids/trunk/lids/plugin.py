@@ -42,7 +42,7 @@ class LIDSPluginError(LIDSError):
     pass
 
 class HelperController(object):
-    def __init__(self, module, interval, searchBase, searchFilter, groupBase, groupFilter):
+    def __init__(self, module, interval, searchBase, searchFilter, groupBase, groupFilter, options):
         """
         Initialize LIDS Helper from module 
         @param module: Module containing a single Helper subclass. Any other subclasses of Helper will be ignored.
@@ -51,6 +51,7 @@ class HelperController(object):
         @param searchFilter: LDAP Search filter
         @param groupBase: LDAP Group Search filter (may be None)
         @param groupFilter: LDAP Group Search base (may be None)
+        @param options: Dictionary of helper-specific options
         """
         self.helper = None
         self.interval = interval
@@ -76,6 +77,8 @@ class HelperController(object):
 
         self.searchAttr = self.helper.attributes
 
+        self.helper.setOptions(options)
+
     def work(self, ldapEntry):
         """
         Pass LDAP Entry to the controlled worker
@@ -86,6 +89,10 @@ class Helper(object):
     """
     Abstract class for LIDS helper plugins
     """
+    def setOption(self, option, value):
+        raise NotImplementedError, \
+                "This method is not implemented in this abstract class"
+
     def work(self, ldapEntry):
         """
         Do something useful with the supplied ldapEntry
