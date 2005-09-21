@@ -44,7 +44,7 @@ import lids
 from lids import ldaputils, daemon, plugin
 
 def usage():
-    print "%s: [hXZ] [-f config file] [-D binddn]" % sys.argv[0]
+    print "%s: [-hXZ] [-f config file] [-D binddn] [-lr service]" % sys.argv[0]
     print "    -h           Print usage (this message)"
     print "    -X           Use GSSAPI instead of simple authentication"
     print "    -Z           Issue StartTLS extended operation"
@@ -106,7 +106,7 @@ def main():
             action = "run"
             serviceName = arg
 
-    if (conf_file == None):
+    if (conf_file == None or serviceName == None):
         usage()
         sys.exit(1)
 
@@ -135,6 +135,15 @@ def main():
     console.setLevel(logging.INFO)
     logger.addHandler(console)
 
+    # Find the specified service
+    for service in config.Service:
+        if (service.getSectionName() == serviceName.lower()):
+            break
+
+    if (service.getSectionName() != serviceName.lower()):
+        print "No such service: %s" % serviceName
+        sys.exit(1)
+
     # Set up LDAP Connection
     try:
         conn = ldaputils.Connection(config.LDAP.uri)
@@ -150,15 +159,6 @@ def main():
         sys.exit(1)
     except ldap.SERVER_DOWN:
         print "Could not contact server: %s" % config.LDAP.uri
-        sys.exit(1)
-
-    # Find the specified service
-    for service in config.Service:
-        if (service.getSectionName() == serviceName):
-            break
-
-    if (service.getSectionName() != serviceName):
-        print "No such service: %s" % serviceName
         sys.exit(1)
 
     if action == "list":
