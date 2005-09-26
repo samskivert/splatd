@@ -52,5 +52,6 @@ setup(
     packages = [
         'lids',
         'lids.helpers'
-    ]
+    ],
+    package_data = {'lids': ['data/lids_conf.xml']}
 )
