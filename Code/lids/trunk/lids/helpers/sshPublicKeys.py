@@ -94,21 +94,24 @@ class Writer(plugin.Helper):
 
         # Validate the UID
         if (self.minuid != None):
-            if (self.minuid >= uid):
+            if (self.minuid > uid):
                 raise plugin.LIDSPluginError, "LDAP Server returned uid %d less than specified minimum uid of %d for entry '%s'" % (uid, self.minuid, ldapEntry.dn)
         # Validate the GID
         if (self.mingid != None):
-            if (self.mingid >= gid):
+            if (self.mingid > gid):
                 raise plugin.LIDSPluginError, "LDAP Server returned gid %d less than specified minimum gid of %d for entry '%s'" % (gid, self.mingid, ldapEntry.dn)
 
 
-        # Grab the key type from the string, "ssh-rsa ..."
-        key_type = key[4:7]
-
-        filename = "%s/.ssh/id_%s.pub" % (home, key_type)
+        tmpfilename = "%s/.ssh/authorized_keys.tmp" % home
+        filename = "%s/.ssh/authorized_keys" % home
         contents = "%s" % key
     
-        logger.info("Writing %s key to %s" % (key_type, filename))
+        logger.info("Writing key to %s" % filename)
+
+        # Make sure the home directory exists
+        if (not os.path.isdir(home)):
+            os.makedirs(home)
+            os.chown(home, uid, gid)
 
         # Fork and setuid to write the files
         pipe = os.pipe()
@@ -119,17 +122,20 @@ class Writer(plugin.Helper):
         if (pid == 0):
             # Drop privs
             try:
-                os.setgid(int(attributes.get("gidNumber")[0]))
-                os.setuid(int(attributes.get("uidNumber")[0]))
+                os.setgid(gid)
+                os.setuid(uid)
             except OSError, e:
                 print str(e)
                 outf.write(str(e) + '\n')
                 outf.close()
                 os._exit(SSH_ERR_PRIVSEP)
 
+            # Adopt a strict umask
+            os.umask(077)
+
             try:
                 # Make sure the directory exists
-                dir = os.path.split(filename)[0]
+                dir = os.path.split(tmpfilename)[0]
                 if not os.path.exists(dir): os.makedirs(dir)
             except OSError, e:
                 outf.write(str(e) + '\n')
@@ -137,10 +143,18 @@ class Writer(plugin.Helper):
                 os._exit(SSH_ERR_MKDIR)
 
             try:
-                f = open(filename, "w+")
+                f = open(tmpfilename, "w+")
                 f.write(contents)
                 f.close()
             except IOError, e:
+                outf.write(str(e) + '\n')
+                outf.close()
+                os._exit(SSH_ERR_WRITE)
+
+            # Move key to ~/authorized_keys
+            try:
+                os.rename(tmpfilename, filename)
+            except OSError, e:
                 outf.write(str(e) + '\n')
                 outf.close()
                 os._exit(SSH_ERR_WRITE)
@@ -159,13 +173,15 @@ class Writer(plugin.Helper):
 
             status = os.WEXITSTATUS(result[1])
 
-        errstr = inf.readline()
-        outf.close()
-        inf.close()
-
         # Handle the error conditions
         if (status == SSH_ERR_NONE):
+            outf.close()
+            inf.close()
             return
+        else:
+            errstr = inf.readline()
+            outf.close()
+            inf.close()
 
         if (status == SSH_ERR_PRIVSEP):
             raise plugin.LIDSPluginError, "Failed to drop privileges, %s" % errstr
