@@ -185,7 +185,7 @@ def daemonize(config):
         if pid == 0:
             # Make sure we don't keep any directory in use
             os.chdir("/")
-            os.umask(0)
+            os.umask(022)
         else:
             os._exit(0)
     else:
