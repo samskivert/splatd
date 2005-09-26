@@ -42,15 +42,17 @@ import lids
 from lids import ldaputils, daemon, plugin
 
 def usage():
-    print "%s: [-h] [-f config file]" % sys.argv[0]
+    print "%s: [-h] [-f config file] [-p pid file]" % sys.argv[0]
     print "    -h             Print usage (this message)"
     print "    -f <config>    Use configuration file"
+    print "    -p <pidfile>   Write daemon pid to file"
 
 def main():
     conf_file = None
+    pid_file = None
     
     try:
-        opts,args = getopt.getopt(sys.argv[1:], "hvf:")
+        opts,args = getopt.getopt(sys.argv[1:], "hvf:p:")
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -61,6 +63,8 @@ def main():
             sys.exit()
         if opt == "-f":
             conf_file = arg
+        if opt == "-p":
+            pid_file = arg
 
     if (conf_file == None):
         usage()
@@ -75,7 +79,7 @@ def main():
         sys.exit(1)
 
     # Daemonize
-    daemonize(config)
+    daemonize(config, pid_file)
 
     # Acquire our logger
     logger = logging.getLogger(lids.LOG_NAME)
@@ -119,7 +123,7 @@ def main():
     # Fire up the reactor
     reactor.run()
 
-def daemonize(config):
+def daemonize(config, pid_file):
     """ Detach a process from the terminal and run it as a daemon """
     # Close all open files.
     try:
@@ -183,6 +187,12 @@ def daemonize(config):
             sys.exit(1)
 
         if pid == 0:
+            # Write out our pid file
+            if (pid_file):
+                f = open(pid_file, 'w')
+                f.write("%d\n" % os.getpid())
+                f.close()
+
             # Make sure we don't keep any directory in use
             os.chdir("/")
             os.umask(022)
