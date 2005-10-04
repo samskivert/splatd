@@ -50,6 +50,7 @@ class MockHelper(plugin.Helper):
         assert(options['test'] == 'value')
 
     def work(self, ldapEntry):
+        assert(ldapEntry.dn == 'uid=john,ou=People,dc=example,dc=com')
         return True
 
     def modify(self, ldapEntry, modifyList):
@@ -61,12 +62,32 @@ class MockHelper(plugin.Helper):
 MockHelper.attributes = ('dn',)
 
 # Test Cases
+class GroupTestCase(unittest.TestCase):
+    """ Test LIDS Groups """
+    def setUp(self):
+        self.slapd = slapd.LDAPServer()
+        self.conn = ldaputils.Connection(slapd.SLAPD_URI)
+        self.entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)')[0]
+
+        filter = ldaputils.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
+        options = {'test':'value'}
+        self.group = plugin.Group(filter, options)
+
+    def tearDown(self):
+        self.slapd.stop()
+
 class HelperWithControllerTestCase(unittest.TestCase):
     """ Test LIDS Helper """
 
     def setUp(self):
+        self.slapd = slapd.LDAPServer()
+        self.conn = ldaputils.Connection(slapd.SLAPD_URI)
+
         options = {'test':'value'}
         self.hc = plugin.HelperController('lids.test.test_plugin', 5, 'dc=example,dc=com', '(uid=john)', None, None, options)
 
+    def tearDown(self):
+        self.slapd.stop()
+
     def test_work(self):
-        self.assert_(self.hc.work(None))
+        self.hc.work(self.conn)

@@ -52,7 +52,7 @@ class Context(object):
         """
         self.svc = {}
         self.tasks = {}
-        self.l = ldapConnection
+        self.ldapConnection = ldapConnection
 
     def addHelper(self, name, controller):
         """
@@ -81,23 +81,9 @@ class Context(object):
             return
 
         ctrl = self.svc[name]
-        logger = logging.getLogger(lids.LOG_NAME)
+        ctrl.work(self.ldapConnection)
 
-        # XXX TODO LDAP scope && group filter support
-        try:
-            entries = self.l.search(ctrl.searchBase, ldap.SCOPE_SUBTREE, ctrl.searchFilter, ctrl.searchAttr)
-        except ldap.LDAPError, e:
-            logger.error("LDAP Search error for helper %s: %s" % (name, e))
-            return
-
-        for entry in entries:
-            try:
-                ctrl.work(entry)
-            except lids.LIDSError, e:
-                logger.error("Helper invocation for '%s' failed with error: %s" % (name, e))
-                continue
-
-    def start(self, once = False):
+    def start(self):
         """
         Add the daemon context to the twisted runloop
         """

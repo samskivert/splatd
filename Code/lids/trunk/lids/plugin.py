@@ -36,10 +36,23 @@ import lids
 from lids import LIDSError
 
 import types
+import logging
+import ldap
 
 # Exceptions
 class LIDSPluginError(LIDSError):
     pass
+
+
+class Group(object):
+    def __init__(self, groupFilter, options):
+        """
+        Initialize a new LIDS group
+        @param groupFilter: A GroupFilter instance used to validate group membership
+        @param options: Dictionary of helper-specific group options
+        """
+        self.groupFilter = groupFilter
+        self.options = options
 
 class HelperController(object):
     def __init__(self, module, interval, searchBase, searchFilter, groupBase, groupFilter, options):
@@ -79,11 +92,26 @@ class HelperController(object):
 
         self.helper.setOptions(options)
 
-    def work(self, ldapEntry):
+    def work(self, ldapConnection):
         """
         Pass LDAP Entry to the controlled worker
         """
-        return self.helper.work(ldapEntry)
+        logger = logging.getLogger(lids.LOG_NAME)
+
+        # XXX TODO LDAP scope && group filter support
+        try:
+            entries = ldapConnection.search(self.searchBase, ldap.SCOPE_SUBTREE, self.searchFilter, self.searchAttr)
+        except ldap.LDAPError, e:
+            logger.error("LDAP Search error for helper %s: %s" % (name, e))
+            return
+
+        for entry in entries:
+            try:
+                self.helper.work(entry)
+            except lids.LIDSError, e:
+                logger.error("Helper invocation for '%s' failed with error: %s" % (name, e))
+                continue
+
 
 class Helper(object):
     """
