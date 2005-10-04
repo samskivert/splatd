@@ -37,7 +37,9 @@
 
 from twisted.trial import unittest
 
-from lids import plugin
+from lids import plugin, ldaputils
+import ldap
+from lids.test import slapd
 
 # Useful Constants
 from lids.test import DATA_DIR
@@ -59,7 +61,7 @@ class MockHelper(plugin.Helper):
 MockHelper.attributes = ('dn',)
 
 # Test Cases
-class HelperWithController(unittest.TestCase):
+class HelperWithControllerTestCase(unittest.TestCase):
     """ Test LIDS Helper """
 
     def setUp(self):
@@ -68,3 +70,45 @@ class HelperWithController(unittest.TestCase):
 
     def test_work(self):
         self.assert_(self.hc.work(None))
+
+
+class GroupFilterTestCase(unittest.TestCase):
+    """ Test Group Filters """
+    def setUp(self):
+        self.slapd = slapd.LDAPServer()
+        self.conn = ldaputils.Connection(slapd.SLAPD_URI)
+        self.entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)')[0]
+
+    def tearDown(self):
+        self.slapd.stop()
+
+    def test_isMember(self):
+        filter = plugin.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
+        self.assert_(filter.isMember(self.entry.dn))
+
+        filter = plugin.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=administrators))', 'uniqueMember')
+        self.assert_(not filter.isMember(self.entry.dn))
+
+    def test_caching(self):
+        filter = plugin.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
+
+        # Set a silly cache TTL to ensure it will never expire
+        filter.cacheTTL = 3000000
+        self.assert_(filter.isMember(self.entry.dn))
+
+        # Acquire write privs
+        self.conn.simple_bind(slapd.ROOTDN, slapd.ROOTPW)
+
+        # Drop self.entry.dn from the developers group
+        group = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))')[0]
+        mod = ldaputils.Modification(group.dn)
+        mod.delete('uniqueMember', self.entry.dn)
+        self.conn.modify(mod)
+
+        # Verify that the group filter is still using the cached results
+        self.assert_(filter.isMember(self.entry.dn))
+
+        # Drop the cache TTL to force the filter to update its cache and
+        # then verify that the cache has been updated
+        filter.cacheTTL = 0
+        self.assert_(not filter.isMember(self.entry.dn))
