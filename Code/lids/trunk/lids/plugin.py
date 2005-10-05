@@ -125,9 +125,9 @@ class HelperController(object):
             if (context == None and self.requireGroup == False):
                 context = self.defaultContext
             elif (context == None and self.requireGroup == True):
-                # Return empty handed
+                # Move on, empty handed
                 logger.debug("DN %s matched zero groups and requireGroup is enabled for helper %s" % (entry.dn, self.name))
-                return
+                continue
 
             try:
                 self.helper.work(context, entry)

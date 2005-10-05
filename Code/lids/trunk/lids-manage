@@ -66,7 +66,7 @@ def run(conn, config, service):
 
     try:
         hc = plugin.HelperController(service.getSectionName(), service.helper, service.frequency, basedn,
-                service.searchfilter, options)
+                service.searchfilter, service.requiregroup, options)
 
         # Find all per-service groups, if any
         for group in service.Group:
