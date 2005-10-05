@@ -80,8 +80,6 @@ class Context(object):
             return
 
         ctrl = self.svc[name]
-        logger = logging.getLogger(lids.LOG_NAME)
-
         ctrl.work(self.ldapConnection)
 
     def start(self):
