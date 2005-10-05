@@ -62,7 +62,7 @@ class Writer(plugin.Helper):
         for key in options.keys():
             if (key == 'home'):
                 context.home = os.path.abspath(options[key])
-                splitHome = self.home.split('/')
+                splitHome = context.home.split('/')
                 if (splitHome[0] != ''):
                     raise plugin.LIDSPluginError, "Relative paths for the home option are not permitted"
                 context.splitHome = splitHome
@@ -126,8 +126,11 @@ class Writer(plugin.Helper):
 
         # Make sure the home directory exists
         if (not os.path.isdir(home)):
-            os.makedirs(home)
-            os.chown(home, uid, gid)
+            try:
+                os.makedirs(home)
+                os.chown(home, uid, gid)
+            except OSError, e:
+                raise plugin.LIDSPluginError, "Failed to create home directory, %s" % e
 
         # Fork and setuid to write the files
         pipe = os.pipe()

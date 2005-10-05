@@ -54,13 +54,12 @@ class Context(object):
         self.tasks = {}
         self.ldapConnection = ldapConnection
 
-    def addHelper(self, name, controller):
+    def addHelper(self, controller):
         """
         Add a helper controller to the daemon context
-        @param name: Unique caller-assigned name. Helpers with non-unique names will overwrite previous additions.
         @param controller: HelperController
         """
-        self.svc[name] = controller
+        self.svc[controller.name] = controller
 
     def removeHelper(self, name):
         """
@@ -81,6 +80,8 @@ class Context(object):
             return
 
         ctrl = self.svc[name]
+        logger = logging.getLogger(lids.LOG_NAME)
+
         ctrl.work(self.ldapConnection)
 
     def start(self):

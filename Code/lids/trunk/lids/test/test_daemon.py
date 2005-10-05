@@ -80,7 +80,7 @@ class ContextTestCase(unittest.TestCase):
         self.slapd = slapd.LDAPServer()
         conn = ldaputils.Connection(slapd.SLAPD_URI)
         self.ctx = daemon.Context(conn)
-        self.hc = plugin.HelperController('lids.test.test_daemon', 1, 'ou=People,dc=example,dc=com', '(uid=john)', None)
+        self.hc = plugin.HelperController('test', 'lids.test.test_daemon', 1, 'ou=People,dc=example,dc=com', '(uid=john)', None)
 
         self.done = False
         self.failure = None
@@ -95,27 +95,27 @@ class ContextTestCase(unittest.TestCase):
         self.failure = why
 
     def test_addHelper(self):
-        self.ctx.addHelper('test', self.hc)
+        self.ctx.addHelper(self.hc)
 
     def test_removeHelper(self):
         # Remove an unstarted task
-        self.ctx.addHelper('test', self.hc)
+        self.ctx.addHelper(self.hc)
         self.ctx.removeHelper('test')
 
         # Remove a started task
-        self.ctx.addHelper('test', self.hc)
+        self.ctx.addHelper(self.hc)
         self.ctx.start()
         self.ctx.removeHelper('test')
 
     def test_run(self):
-        self.ctx.addHelper('test', self.hc)
+        self.ctx.addHelper(self.hc)
         self.ctx.run()
 
         if (self.hc.helper.failure):
             self.fail(self.hc.helper.failure)
 
     def test_start(self):
-        self.ctx.addHelper('test', self.hc)
+        self.ctx.addHelper(self.hc)
         self.ctx.start()
 
         # Add a timeout

@@ -44,9 +44,10 @@ class LIDSPluginError(LIDSError):
     pass
 
 class HelperController(object):
-    def __init__(self, module, interval, searchBase, searchFilter, helperOptions):
+    def __init__(self, name, module, interval, searchBase, searchFilter, helperOptions):
         """
         Initialize LIDS Helper from module 
+        @param name: Unique caller-assigned name. Helpers with non-unique names will overwrite previous additions when added to a daemon context.
         @param module: Module containing a single Helper subclass. Any other subclasses of Helper will be ignored.
         @param interval: Run interval in seconds. An interval of '0' will cause the helper to be run only once.
         @param searchBase: LDAP Search base
@@ -55,6 +56,7 @@ class HelperController(object):
         @ivar requireGroup: Require any returned entries to be a member of a group supplied by addGroup(). Defaults to False.
         """
         self.helper = None
+        self.name = name
         self.interval = interval
         self.searchFilter = searchFilter
         self.searchBase = searchBase
@@ -99,7 +101,7 @@ class HelperController(object):
 
     def work(self, ldapConnection):
         """
-        Pass LDAP Entry to the controlled worker
+        Find matching LDAP entries and fire off the helper
         """
         logger = logging.getLogger(lids.LOG_NAME)
 
@@ -107,7 +109,7 @@ class HelperController(object):
         try:
             entries = ldapConnection.search(self.searchBase, ldap.SCOPE_SUBTREE, self.searchFilter, self.searchAttr)
         except ldap.LDAPError, e:
-            logger.error("LDAP Search error for helper %s: %s" % (name, e))
+            logger.error("LDAP Search error for helper %s: %s" % (self.name, e))
             return
 
         # Iterate over the results
@@ -124,13 +126,13 @@ class HelperController(object):
                 context = self.defaultContext
             elif (context == None and self.requireGroup == True):
                 # Return empty handed
-                logger.debug("DN %s matched zero groups and requireGroup is enabled" % entry.dn)
+                logger.debug("DN %s matched zero groups and requireGroup is enabled for helper %s" % (entry.dn, self.name))
                 return
 
             try:
                 self.helper.work(context, entry)
             except lids.LIDSError, e:
-                logger.error("Helper invocation for '%s' failed with error: %s" % (name, e))
+                logger.error("Helper invocation for '%s' failed with error: %s" % (self.name, e))
 
 class Helper(object):
     """

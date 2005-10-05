@@ -20,6 +20,7 @@
     <sectiontype name="Group" required="no">
         <key name="SearchBase" required="no"/>
         <key name="SearchFilter" required="yes"/>
+        <key name="MemberAttribute" required="no"/>
         <multisection type="Option" name="+" attribute="Option" required="no"/>
     </sectiontype>
 
@@ -28,7 +29,7 @@
         <key name="SearchFilter" required="yes"/>
         <key name="Helper" required="yes"/>
         <key name="Frequency" datatype="time-interval" required="yes"/>
-        <key name="RequireGroup" datatype="boolean" required="no"/>
+        <key name="RequireGroup" datatype="boolean" required="no" default="false"/>
         <multisection type="Option" name="+" attribute="Option" required="no"/>
         <multisection type="Group" name="+" attribute="Group" required="no"/>
     </sectiontype>

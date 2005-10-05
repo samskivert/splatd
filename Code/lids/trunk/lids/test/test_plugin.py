@@ -76,7 +76,7 @@ class HelperWithControllerTestCase(unittest.TestCase):
         self.conn = ldaputils.Connection(slapd.SLAPD_URI)
 
         options = {'test':'value'}
-        self.hc = plugin.HelperController('lids.test.test_plugin', 5, 'dc=example,dc=com', '(uid=john)', options)
+        self.hc = plugin.HelperController('test', 'lids.test.test_plugin', 5, 'dc=example,dc=com', '(uid=john)', options)
 
     def tearDown(self):
         self.slapd.stop()

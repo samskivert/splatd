@@ -65,14 +65,40 @@ def run(conn, config, service):
         options[opt.getSectionName()] = opt.value
 
     try:
-        hc = plugin.HelperController(service.helper, service.frequency, service.searchbase,
-                service.searchfilter, service.groupbase, service.groupfilter, options)
+        hc = plugin.HelperController(service.getSectionName(), service.helper, service.frequency, basedn,
+                service.searchfilter, options)
+
+        # Find all per-service groups, if any
+        for group in service.Group:
+
+            # Use the default basedn if necessary
+            if (group.searchbase == None):
+                basedn = config.LDAP.basedn
+            else:
+                basedn = group.searchbase
+
+            # Instantiate our group filter
+            if (group.memberattribute):
+                groupFilter = ldaputils.GroupFilter(basedn, ldap.SCOPE_SUBTREE, group.searchfilter, group.memberattribute)
+            else:
+                groupFilter = ldaputils.GroupFilter(basedn, ldap.SCOPE_SUBTREE, group.searchfilter)
+
+            # Load group-specific helper options
+            groupOptions = {}
+            groupOptions.update(options)
+
+            for opt in group.Option:
+                groupOptions[opt.getSectionName()] = opt.value
+
+            # Add our newly minted group to the controller
+            hc.addGroup(groupFilter, groupOptions)
+
     except plugin.LIDSPluginError, e:
         print "Error initializing service '%s': %s" % (service.getSectionName(), e)
         return
 
     ctx = daemon.Context(conn)
-    ctx.addHelper(service.getSectionName(), hc)
+    ctx.addHelper(hc)
     ctx.run()
 
 def list(conn, config, service):
