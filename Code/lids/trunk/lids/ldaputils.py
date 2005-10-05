@@ -153,16 +153,14 @@ class GroupFilter(object):
     """
     LDAP Group Filter Object
     """
-    def __init__(self, ldapConnection, baseDN, scope, filter, memberAttribute='uniqueMember'):
+    def __init__(self, baseDN, scope, filter, memberAttribute='uniqueMember'):
         """
         Initialize a new group filter object
-        @param ldapConnection: A valid LDAP Connection instance
         @param baseDN: LDAP search base
         @param scope: LDAP search scope
         @param filter: LDAP search filter
         @param memberAttribute: Attribute containing member DN. Defaults to 'uniqueMember'
         """
-        self.ldapConnection = ldapConnection 
         self.baseDN = baseDN
         self.scope = scope
         self.filter = filter
@@ -172,16 +170,17 @@ class GroupFilter(object):
         # Time of last update.
         self._lastUpdate = 0
 
-    def isMember(self, dn):
+    def isMember(self, ldapConnection, dn):
         """
         Verify that dn is a member of the group(s) returned by the LDAP search specified
         at instance initialization.
+        @param ldapConnection: A valid LDAP Connection instance
         @param dn: DN to test against group list
         """
         if (time.time() - self._lastUpdate > self.cacheTTL or self._lastUpdate == 0):
             # If we've exceeded our cache TTL (or no previous search has
             # been performed), perform a new search.
-            self.groups = self.ldapConnection.search(self.baseDN, self.scope, self.filter, [self.memberAttribute,])
+            self.groups = ldapConnection.search(self.baseDN, self.scope, self.filter, [self.memberAttribute,])
             self._lastUpdate = time.time()
 
         for group in self.groups:

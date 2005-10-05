@@ -115,7 +115,7 @@ class HelperController(object):
             context = None
             # Find the group helper instance, if any
             for group in self.groups:
-                if (group.isMember(entry.dn)):
+                if (group.isMember(ldapConnection, entry.dn)):
                     context = self.groupsCtx[group]
                     # Break to outer loop
                     break

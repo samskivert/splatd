@@ -184,18 +184,18 @@ class GroupFilterTestCase(unittest.TestCase):
         self.slapd.stop()
 
     def test_isMember(self):
-        filter = ldaputils.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
-        self.assert_(filter.isMember(self.entry.dn))
+        filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
+        self.assert_(filter.isMember(self.conn, self.entry.dn))
 
-        filter = ldaputils.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=administrators))', 'uniqueMember')
-        self.assert_(not filter.isMember(self.entry.dn))
+        filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=administrators))', 'uniqueMember')
+        self.assert_(not filter.isMember(self.conn, self.entry.dn))
 
     def test_caching(self):
-        filter = ldaputils.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
+        filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
 
         # Set a silly cache TTL to ensure it will never expire
         filter.cacheTTL = 3000000
-        self.assert_(filter.isMember(self.entry.dn))
+        self.assert_(filter.isMember(self.conn, self.entry.dn))
 
         # Acquire write privs
         self.conn.simple_bind(slapd.ROOTDN, slapd.ROOTPW)
@@ -207,9 +207,9 @@ class GroupFilterTestCase(unittest.TestCase):
         self.conn.modify(mod)
 
         # Verify that the group filter is still using the cached results
-        self.assert_(filter.isMember(self.entry.dn))
+        self.assert_(filter.isMember(self.conn, self.entry.dn))
 
         # Drop the cache TTL to force the filter to update its cache and
         # then verify that the cache has been updated
         filter.cacheTTL = 0
-        self.assert_(not filter.isMember(self.entry.dn))
+        self.assert_(not filter.isMember(self.conn, self.entry.dn))

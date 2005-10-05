@@ -101,7 +101,7 @@ class HelperWithControllerTestCase(unittest.TestCase):
         self.hc.requireGroup = True
         # Add a group that will not match, and again ensure that the worker
         # is not called
-        filter = ldaputils.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=administrators))', 'uniqueMember')
+        filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=administrators))', 'uniqueMember')
         self.hc.addGroup(filter, {'test':'value', 'group':'administrators'})
         self.hc.work(self.conn)
         self.assertEquals(self.hc.helper.success, False)
@@ -110,14 +110,14 @@ class HelperWithControllerTestCase(unittest.TestCase):
         self.hc.requireGroup = True
         # Add a group that will match. Ensure that the worker is called with the
         # correct context
-        filter = ldaputils.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
+        filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
         self.hc.addGroup(filter, {'test':'value', 'group':'developers'})
         self.hc.work(self.conn)
         self.assertEquals(self.hc.helper.success, True)
         self.assertEquals(self.hc.helper.context['group'], 'developers')
 
         # Add an additional group. Ensure that only the first group matches
-        filter = ldaputils.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
+        filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
         self.hc.addGroup(filter, {'test':'value', 'group':'developers2'})
         self.hc.work(self.conn)
         self.assertEquals(self.hc.helper.success, True)
