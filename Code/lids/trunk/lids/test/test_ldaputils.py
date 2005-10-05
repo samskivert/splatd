@@ -184,11 +184,17 @@ class GroupFilterTestCase(unittest.TestCase):
         self.slapd.stop()
 
     def test_isMember(self):
-        filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
+        # Matching member
+        filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))')
         self.assert_(filter.isMember(self.conn, self.entry.dn))
 
-        filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=administrators))', 'uniqueMember')
+        # Should not match
+        filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=administrators))')
         self.assert_(not filter.isMember(self.conn, self.entry.dn))
+
+        # Try with a custom matching attribute
+        filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfNames)(cn=notunique))', 'member')
+        self.assert_(filter.isMember(self.conn, self.entry.dn))
 
     def test_caching(self):
         filter = ldaputils.GroupFilter(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')

@@ -49,6 +49,13 @@ uniqueMember: uid=sally,ou=People,dc=example,dc=com
 objectClass: top
 objectClass: groupOfUniqueNames
 
+# notunique, Groups, example.com
+dn: cn=notunique,ou=Groups,dc=example,dc=com
+cn: notunique
+member: uid=john,ou=People,dc=example,dc=com
+objectClass: top
+objectClass: groupOfNames
+
 # john, People, example.com
 dn: uid=john,ou=People,dc=example,dc=com
 uid: john
