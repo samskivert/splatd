@@ -44,7 +44,7 @@ class LIDSPluginError(LIDSError):
     pass
 
 class HelperController(object):
-    def __init__(self, name, module, interval, searchBase, searchFilter, helperOptions):
+    def __init__(self, name, module, interval, searchBase, searchFilter, requireGroup, helperOptions):
         """
         Initialize LIDS Helper from module 
         @param name: Unique caller-assigned name. Helpers with non-unique names will overwrite previous additions when added to a daemon context.
@@ -52,16 +52,16 @@ class HelperController(object):
         @param interval: Run interval in seconds. An interval of '0' will cause the helper to be run only once.
         @param searchBase: LDAP Search base
         @param searchFilter: LDAP Search filter
+        @param requireGroup: Require any returned entries to be a member of a group supplied by addGroup().
         @param helperOptions: Dictionary of helper-specific options
-        @ivar requireGroup: Require any returned entries to be a member of a group supplied by addGroup(). Defaults to False.
         """
         self.helper = None
         self.name = name
         self.interval = interval
         self.searchFilter = searchFilter
         self.searchBase = searchBase
+        self.requireGroup = requireGroup
 
-        self.requireGroup = False
         self.groupsCtx = {}
         self.groups = []
 

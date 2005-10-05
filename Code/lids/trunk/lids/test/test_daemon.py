@@ -80,7 +80,7 @@ class ContextTestCase(unittest.TestCase):
         self.slapd = slapd.LDAPServer()
         conn = ldaputils.Connection(slapd.SLAPD_URI)
         self.ctx = daemon.Context(conn)
-        self.hc = plugin.HelperController('test', 'lids.test.test_daemon', 1, 'ou=People,dc=example,dc=com', '(uid=john)', None)
+        self.hc = plugin.HelperController('test', 'lids.test.test_daemon', 1, 'ou=People,dc=example,dc=com', '(uid=john)', False, None)
 
         self.done = False
         self.failure = None
