@@ -46,12 +46,18 @@ from lids.test import DATA_DIR
 
 # Mock Helper
 class MockHelper(plugin.Helper):
-    def setOptions(self, options):
-        assert(options['test'] == 'value')
+    def __init__(self):
+        self.success = False
 
-    def work(self, ldapEntry):
+    def parseOptions(self, options):
+        assert(options['test'] == 'value')
+        return options
+
+    def work(self, context, ldapEntry):
+        assert(context['test'] == 'value')
         assert(ldapEntry.dn == 'uid=john,ou=People,dc=example,dc=com')
-        return True
+        self.context = context
+        self.success = True
 
     def modify(self, ldapEntry, modifyList):
         pass
@@ -62,20 +68,6 @@ class MockHelper(plugin.Helper):
 MockHelper.attributes = ('dn',)
 
 # Test Cases
-class GroupTestCase(unittest.TestCase):
-    """ Test LIDS Groups """
-    def setUp(self):
-        self.slapd = slapd.LDAPServer()
-        self.conn = ldaputils.Connection(slapd.SLAPD_URI)
-        self.entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)')[0]
-
-        filter = ldaputils.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
-        options = {'test':'value'}
-        self.group = plugin.Group(filter, options)
-
-    def tearDown(self):
-        self.slapd.stop()
-
 class HelperWithControllerTestCase(unittest.TestCase):
     """ Test LIDS Helper """
 
@@ -84,10 +76,49 @@ class HelperWithControllerTestCase(unittest.TestCase):
         self.conn = ldaputils.Connection(slapd.SLAPD_URI)
 
         options = {'test':'value'}
-        self.hc = plugin.HelperController('lids.test.test_plugin', 5, 'dc=example,dc=com', '(uid=john)', None, None, options)
+        self.hc = plugin.HelperController('lids.test.test_plugin', 5, 'dc=example,dc=com', '(uid=john)', options)
 
     def tearDown(self):
         self.slapd.stop()
 
     def test_work(self):
         self.hc.work(self.conn)
+
+    def test_requireGroup(self):
+        self.hc.requireGroup = True
+        # Ensure that the worker is not called if requireGroup is True
+        # and no groups have been added
+        self.hc.work(self.conn)
+        self.assertEquals(self.hc.helper.success, False)
+
+    def test_requireGroupDisabled(self):
+        # Ensure that the worker is called if requireGroup is False (default)
+        # and no groups have been added
+        self.hc.work(self.conn)
+        self.assertEquals(self.hc.helper.success, True)
+
+    def test_requireGroupNoMatch(self):
+        self.hc.requireGroup = True
+        # Add a group that will not match, and again ensure that the worker
+        # is not called
+        filter = ldaputils.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=administrators))', 'uniqueMember')
+        self.hc.addGroup(filter, {'test':'value', 'group':'administrators'})
+        self.hc.work(self.conn)
+        self.assertEquals(self.hc.helper.success, False)
+
+    def test_addGroup(self):
+        self.hc.requireGroup = True
+        # Add a group that will match. Ensure that the worker is called with the
+        # correct context
+        filter = ldaputils.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
+        self.hc.addGroup(filter, {'test':'value', 'group':'developers'})
+        self.hc.work(self.conn)
+        self.assertEquals(self.hc.helper.success, True)
+        self.assertEquals(self.hc.helper.context['group'], 'developers')
+
+        # Add an additional group. Ensure that only the first group matches
+        filter = ldaputils.GroupFilter(self.conn, slapd.BASEDN, ldap.SCOPE_SUBTREE, '(&(objectClass=groupOfUniqueNames)(cn=developers))', 'uniqueMember')
+        self.hc.addGroup(filter, {'test':'value', 'group':'developers2'})
+        self.hc.work(self.conn)
+        self.assertEquals(self.hc.helper.success, True)
+        self.assertEquals(self.hc.helper.context['group'], 'developers')

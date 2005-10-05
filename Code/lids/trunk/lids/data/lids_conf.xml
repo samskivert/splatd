@@ -16,14 +16,21 @@
     <sectiontype name="Option" required="no">
         <key name="Value" required="yes"/>
     </sectiontype>
+
+    <sectiontype name="Group" required="no">
+        <key name="SearchBase" required="no"/>
+        <key name="SearchFilter" required="yes"/>
+        <multisection type="Option" name="+" attribute="Option" required="no"/>
+    </sectiontype>
+
     <sectiontype name="Service">
         <key name="SearchBase" required="no"/>
         <key name="SearchFilter" required="yes"/>
-        <key name="GroupBase" required="no"/>
-        <key name="GroupFilter" required="no"/>
         <key name="Helper" required="yes"/>
         <key name="Frequency" datatype="time-interval" required="yes"/>
+        <key name="RequireGroup" datatype="boolean" required="no"/>
         <multisection type="Option" name="+" attribute="Option" required="no"/>
+        <multisection type="Group" name="+" attribute="Group" required="no"/>
     </sectiontype>
     <multisection type="Service" name="+" attribute="Service" required="no"/>
 

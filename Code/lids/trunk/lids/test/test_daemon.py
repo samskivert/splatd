@@ -55,15 +55,15 @@ class MockHelper(plugin.Helper):
         self.done = False
         self.failure = None
 
-    def work(self, ldapEntry):
+    def work(self, context, ldapEntry):
         uid = ldapEntry.attributes['uid'][0]
         if(uid != 'john'):
             self.failure = "Incorrect LDAP attribute returned (Wanted: 'john', Got: '%s')" % uid
             self.done = True
         self.done = True
 
-    def setOptions(self, options):
-        pass
+    def parseOptions(self, options):
+        return None
 
     def modify(self, ldapEntry, modifyList):
         pass
@@ -80,7 +80,7 @@ class ContextTestCase(unittest.TestCase):
         self.slapd = slapd.LDAPServer()
         conn = ldaputils.Connection(slapd.SLAPD_URI)
         self.ctx = daemon.Context(conn)
-        self.hc = plugin.HelperController('lids.test.test_daemon', 1, 'ou=People,dc=example,dc=com', '(uid=john)', None, None, None)
+        self.hc = plugin.HelperController('lids.test.test_daemon', 1, 'ou=People,dc=example,dc=com', '(uid=john)', None)
 
         self.done = False
         self.failure = None

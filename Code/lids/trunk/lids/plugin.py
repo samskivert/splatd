@@ -43,35 +43,25 @@ import ldap
 class LIDSPluginError(LIDSError):
     pass
 
-
-class Group(object):
-    def __init__(self, groupFilter, options):
-        """
-        Initialize a new LIDS group
-        @param groupFilter: A GroupFilter instance used to validate group membership
-        @param options: Dictionary of helper-specific group options
-        """
-        self.groupFilter = groupFilter
-        self.options = options
-
 class HelperController(object):
-    def __init__(self, module, interval, searchBase, searchFilter, groupBase, groupFilter, options):
+    def __init__(self, module, interval, searchBase, searchFilter, helperOptions):
         """
         Initialize LIDS Helper from module 
         @param module: Module containing a single Helper subclass. Any other subclasses of Helper will be ignored.
         @param interval: Run interval in seconds. An interval of '0' will cause the helper to be run only once.
         @param searchBase: LDAP Search base
         @param searchFilter: LDAP Search filter
-        @param groupBase: LDAP Group Search filter (may be None)
-        @param groupFilter: LDAP Group Search base (may be None)
-        @param options: Dictionary of helper-specific options
+        @param helperOptions: Dictionary of helper-specific options
+        @ivar requireGroup: Require any returned entries to be a member of a group supplied by addGroup(). Defaults to False.
         """
         self.helper = None
         self.interval = interval
         self.searchFilter = searchFilter
         self.searchBase = searchBase
-        self.groupFilter = groupFilter
-        self.groupBase = groupBase
+
+        self.requireGroup = False
+        self.groupsCtx = {}
+        self.groups = []
 
         p = __import__(module, globals(), locals(), ['__file__'])
         for attr in dir(p):
@@ -80,6 +70,7 @@ class HelperController(object):
                 # Skip abstract class
                 if (not obj == Helper):
                     self.helper = obj()
+                    self._helperClass = obj
                     break
 
         if (self.helper == None):
@@ -90,7 +81,21 @@ class HelperController(object):
 
         self.searchAttr = self.helper.attributes
 
-        self.helper.setOptions(options)
+        self.defaultContext = self.helper.parseOptions(helperOptions)
+
+    def addGroup(self, groupFilter, helperOptions = None):
+        """
+        Add a new group filter.
+        @param groupFilter: Instance of ldaputils.GroupFilter
+        @param helperOptions; Group-specific helper options. Optional.
+        """
+        if (helperOptions):
+            self.groupsCtx[groupFilter] = self.helper.parseOptions(helperOptions)
+        else:
+            self.groupsCtx[groupFilter] = self.defaultContext 
+
+        # Groups must be tested in the order they are added
+        self.groups.append(groupFilter)
 
     def work(self, ldapConnection):
         """
@@ -98,26 +103,44 @@ class HelperController(object):
         """
         logger = logging.getLogger(lids.LOG_NAME)
 
-        # XXX TODO LDAP scope && group filter support
+        # XXX TODO LDAP scope support
         try:
             entries = ldapConnection.search(self.searchBase, ldap.SCOPE_SUBTREE, self.searchFilter, self.searchAttr)
         except ldap.LDAPError, e:
             logger.error("LDAP Search error for helper %s: %s" % (name, e))
             return
 
+        # Iterate over the results
         for entry in entries:
+            context = None
+            # Find the group helper instance, if any
+            for group in self.groups:
+                if (group.isMember(entry.dn)):
+                    context = self.groupsCtx[group]
+                    # Break to outer loop
+                    break
+
+            if (context == None and self.requireGroup == False):
+                context = self.defaultContext
+            elif (context == None and self.requireGroup == True):
+                # Return empty handed
+                logger.debug("DN %s matched zero groups and requireGroup is enabled" % entry.dn)
+                return
+
             try:
-                self.helper.work(entry)
+                self.helper.work(context, entry)
             except lids.LIDSError, e:
                 logger.error("Helper invocation for '%s' failed with error: %s" % (name, e))
-                continue
-
 
 class Helper(object):
     """
     Abstract class for LIDS helper plugins
     """
-    def setOption(self, option, value):
+    def parseOptions(self, options):
+        """
+        Parse the supplied options dict and return
+        an opaque configuration context.
+        """
         raise NotImplementedError, \
                 "This method is not implemented in this abstract class"
 

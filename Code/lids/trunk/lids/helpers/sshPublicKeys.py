@@ -46,29 +46,41 @@ SSH_ERR_PRIVSEP = 2
 SSH_ERR_MKDIR = 3
 SSH_ERR_WRITE = 4
 
-class Writer(plugin.Helper):
+class WriterContext(object):
+    """ Option Context """
     def __init__(self):
         self.minuid = None
         self.mingid = None
         self.home = None
+        self.splitHome = None
+        self.command = None
 
-    def setOptions(self, options):
+class Writer(plugin.Helper):
+    def parseOptions(self, options):
+        context = WriterContext()
+
         for key in options.keys():
-            if (key == "home"):
-                self.home = os.path.abspath(options[key])
-                self.splitHome = self.home.split('/')
-                if (self.splitHome[0] != ''):
+            if (key == 'home'):
+                context.home = os.path.abspath(options[key])
+                splitHome = self.home.split('/')
+                if (splitHome[0] != ''):
                     raise plugin.LIDSPluginError, "Relative paths for the home option are not permitted"
+                context.splitHome = splitHome
                 continue
-            if (key == "minuid"):
-                self.minuid = int(options[key])
+            if (key == 'minuid'):
+                context.minuid = int(options[key])
                 continue
-            if (key == "mingid"):
-                self.mingid = int(options[key])
+            if (key == 'mingid'):
+                context.mingid = int(options[key])
+                continue
+            if (key == 'command'):
+                context.command = options[key]
                 continue
             raise plugin.LIDSPluginError, "Invalid option '%s' specified." % key
 
-    def work(self, ldapEntry):
+        return context
+
+    def work(self, context, ldapEntry):
         attributes = ldapEntry.attributes
 
         # Test for required attributes
@@ -83,28 +95,32 @@ class Writer(plugin.Helper):
         gid = int(attributes.get("gidNumber")[0])
 
         # Validate the home directory
-        if (self.home != None):
+        if (context.home != None):
             givenPath = os.path.abspath(home).split('/')
-            if (len(givenPath) < len(self.splitHome)):
-                raise plugin.LIDSPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, self.home, ldapEntry.dn)
+            if (len(givenPath) < len(context.splitHome)):
+                raise plugin.LIDSPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, context.home, ldapEntry.dn)
 
-            for i in range(0, len(self.splitHome)):
-                if (self.splitHome[i] != givenPath[i]):
-                    raise plugin.LIDSPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, self.home, ldapEntry.dn)
+            for i in range(0, len(context.splitHome)):
+                if (context.splitHome[i] != givenPath[i]):
+                    raise plugin.LIDSPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, context.home, ldapEntry.dn)
 
         # Validate the UID
-        if (self.minuid != None):
-            if (self.minuid > uid):
-                raise plugin.LIDSPluginError, "LDAP Server returned uid %d less than specified minimum uid of %d for entry '%s'" % (uid, self.minuid, ldapEntry.dn)
+        if (context.minuid != None):
+            if (context.minuid > uid):
+                raise plugin.LIDSPluginError, "LDAP Server returned uid %d less than specified minimum uid of %d for entry '%s'" % (uid, context.minuid, ldapEntry.dn)
         # Validate the GID
-        if (self.mingid != None):
-            if (self.mingid > gid):
-                raise plugin.LIDSPluginError, "LDAP Server returned gid %d less than specified minimum gid of %d for entry '%s'" % (gid, self.mingid, ldapEntry.dn)
+        if (context.mingid != None):
+            if (context.mingid > gid):
+                raise plugin.LIDSPluginError, "LDAP Server returned gid %d less than specified minimum gid of %d for entry '%s'" % (gid, context.mingid, ldapEntry.dn)
 
 
         tmpfilename = "%s/.ssh/authorized_keys.tmp" % home
         filename = "%s/.ssh/authorized_keys" % home
-        contents = "%s" % key
+
+        if (context.command == None):
+            contents = "%s" % key
+        else:
+            contents = "command=\"%s\" %s" % (context.command, key)
     
         logger.info("Writing key to %s" % filename)
 
