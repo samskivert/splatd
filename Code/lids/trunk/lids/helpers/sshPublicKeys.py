@@ -90,9 +90,9 @@ class Writer(plugin.Helper):
             return
 
         home = attributes.get("homeDirectory")[0]
-        key = attributes.get("sshPublicKey")[0]
         uid = int(attributes.get("uidNumber")[0])
         gid = int(attributes.get("gidNumber")[0])
+        keys = attributes.get("sshPublicKey")
 
         # Validate the home directory
         if (context.home != None):
@@ -116,12 +116,6 @@ class Writer(plugin.Helper):
 
         tmpfilename = "%s/.ssh/authorized_keys.tmp" % home
         filename = "%s/.ssh/authorized_keys" % home
-
-        if (context.command == None):
-            contents = "%s" % key
-        else:
-            contents = "command=\"%s\" %s" % (context.command, key)
-    
         logger.info("Writing key to %s" % filename)
 
         # Make sure the home directory exists
@@ -163,7 +157,13 @@ class Writer(plugin.Helper):
 
             try:
                 f = open(tmpfilename, "w+")
-                f.write(contents)
+                for key in keys:
+                    if (context.command == None):
+                        contents = "%s\n" % key
+                    else:
+                        contents = "command=\"%s\" %s\n" % (context.command, key)
+
+                    f.write(contents)
                 f.close()
             except IOError, e:
                 outf.write(str(e) + '\n')
