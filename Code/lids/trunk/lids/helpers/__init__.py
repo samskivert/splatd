@@ -29,17 +29,3 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
-import os
-import re
-
-# Import each of the appropriate helper modules in the directory
-pyre = re.compile(".py$")
-initre = re.compile("^__init__")
-
-for f in os.listdir(__path__[0]):
-    if pyre.search(f) and not initre.search(f):
-        m = f.rsplit(".", 1)[0]
-        __import__(m, globals(), locals(), [])
-
-        
