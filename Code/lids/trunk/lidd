@@ -132,7 +132,12 @@ def main():
                 groupOptions.update(options)
 
                 for opt in group.Option:
-                    groupOptions[opt.getSectionName()] = opt.value
+                    if (opt.value == None):
+                        # Remove deleted options
+                        groupOptions.pop(opt.getSectionName())
+                    else:
+                        # Add additional group options
+                        groupOptions[opt.getSectionName()] = opt.value
 
                 # Add our newly minted group to the controller
                 hc.addGroup(groupFilter, groupOptions)

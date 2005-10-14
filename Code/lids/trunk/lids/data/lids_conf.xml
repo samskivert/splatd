@@ -14,7 +14,7 @@
 
     <!-- Services Configuration -->
     <sectiontype name="Option" required="no">
-        <key name="Value" required="yes"/>
+        <key name="Value" required="no"/>
     </sectiontype>
 
     <sectiontype name="Group" required="no">
