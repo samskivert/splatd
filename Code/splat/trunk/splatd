@@ -44,15 +44,21 @@ from splat import ldaputils, daemon, plugin
 def usage():
     print "%s: [-h] [-f config file] [-p pid file]" % sys.argv[0]
     print "    -h             Print usage (this message)"
+    print "    -d             Debug mode. Will not fork."
     print "    -f <config>    Use configuration file"
     print "    -p <pidfile>   Write daemon pid to file"
 
 def main():
     conf_file = None
     pid_file = None
+    debug_flag = False
     
+    # Close all file descriptors before doing anything else
+    if (not debug_flag):
+        close_fds()
+
     try:
-        opts,args = getopt.getopt(sys.argv[1:], "hvf:p:")
+        opts,args = getopt.getopt(sys.argv[1:], "hvdf:p:")
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -61,6 +67,8 @@ def main():
         if opt == "-h":
             usage()
             sys.exit()
+        if opt == "-d":
+            debug_flag = True
         if opt == "-f":
             conf_file = arg
         if opt == "-p":
@@ -78,8 +86,16 @@ def main():
         print "Configuration Error: %s" % e
         sys.exit(1)
 
+    # Set up logging
+    try:
+        config.Logging()
+    except Exception, e:
+        print "Log initialization failed: %s" % e
+        sys.exit(1)
+
     # Daemonize
-    daemonize(config, pid_file)
+    if (not debug_flag):
+        daemonize(config, pid_file)
 
     # Acquire our logger
     logger = logging.getLogger(splat.LOG_NAME)
@@ -154,8 +170,8 @@ def main():
     # Fire up the reactor
     reactor.run()
 
-def daemonize(config, pid_file):
-    """ Detach a process from the terminal and run it as a daemon """
+def close_fds():
+    """ Close all FDs other than stdin, stdout, and stderr """
     # Close all open files.
     try:
         maxfd = os.sysconf("SC_OPEN_MAX")
@@ -176,13 +192,8 @@ def daemonize(config, pid_file):
             # Ignore EBADF
             pass
 
-    # Set up logging
-    try:
-        config.Logging()
-    except Exception, e:
-        print "Log initialization failed: %s" % e
-        sys.exit(1)
-
+def daemonize(config, pid_file):
+    """ Detach a process from the terminal and run it as a daemon """
     # Redirect stdin, stdout, and stderr to /dev/null
     null = os.open('/dev/null', os.O_RDWR)
     os.dup2(null, stdin)
