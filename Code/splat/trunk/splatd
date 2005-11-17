@@ -53,10 +53,6 @@ def main():
     pid_file = None
     debug_flag = False
     
-    # Close all file descriptors before doing anything else
-    if (not debug_flag):
-        close_fds()
-
     try:
         opts,args = getopt.getopt(sys.argv[1:], "hvdf:p:")
     except getopt.GetoptError:
@@ -77,6 +73,10 @@ def main():
     if (conf_file == None):
         usage()
         sys.exit(1)
+
+    # Close all file descriptors before doing anything else
+    if (not debug_flag):
+        close_fds()
 
     # Load our configuration schema
     schema = ZConfig.loadSchema(splat.CONFIG_SCHEMA)
