@@ -182,7 +182,7 @@ def close_fds():
     # initialization error message ...
     stdin = sys.stdin.fileno()
     stdout = sys.stdout.fileno()
-    stderr = sys.stdout.fileno()
+    stderr = sys.stderr.fileno()
 
     for fd in range(0, maxfd):
         try:
