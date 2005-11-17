@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # slapd.py vi:ts=4:sw=4:expandtab:
 #
-# LDAP Information Distribution System
+# Scaleable Periodic LDAP Attribute Transmogrifier
 # Authors:
 #       Landon Fuller <landonf@threerings.net>
 #       Will Barton <wbb4@opendarwin.org>
@@ -42,7 +42,7 @@ import os, posix, shutil, signal
 import subprocess, urllib
 
 # Useful Constants
-from lids.test import DATA_DIR
+from splat.test import DATA_DIR
 LDAP_DIR = os.path.join(DATA_DIR, 'openldap')
 
 SLAPD_CONFIG = os.path.join(LDAP_DIR, 'slapd.conf')

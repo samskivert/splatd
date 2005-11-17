@@ -1,6 +1,6 @@
 # daemon.py vi:ts=4:sw=4:expandtab:
 #
-# LIDS Daemon Support.
+# Splat Daemon Support.
 # Author:
 #       Will Barton <wbb4@opendarwin.org>
 #       Landon Fuller <landonf@threerings.net>
@@ -36,18 +36,18 @@
 # distributes information from LDAP using helper classes based on the
 # frequency specification of sections in a lid.conf file.
 
-import lids
-from lids import plugin
+import splat
+from splat import plugin
 
 from twisted.internet import reactor, task
 
 import ldap, logging
 
 class Context(object):
-    # LIDS Daemon Context
+    # Splat Daemon Context
     def __init__(self, ldapConnection):
         """
-        Initialize a LIDS Daemon context
+        Initialize a Splat Daemon context
         @param ldapConnection: A connected instance of ldaputils.Connection
         """
         self.svc = {}

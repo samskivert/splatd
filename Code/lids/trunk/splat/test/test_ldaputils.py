@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # test_ldap.py vi:ts=4:sw=4:expandtab:
 #
-# LDAP Information Distribution System
+# Scaleable Periodic LDAP Attribute Transmogrifier
 # Authors:
 #       Landon Fuller <landonf@threerings.net>
 #       Will Barton <wbb4@opendarwin.org>
@@ -38,11 +38,11 @@
 from twisted.trial import unittest
 import ldap
 
-from lids import ldaputils
+from splat import ldaputils
 
 # Useful Constants
-from lids.test import DATA_DIR
-from lids.test import slapd
+from splat.test import DATA_DIR
+from splat.test import slapd
 
 # Test Cases
 class ConnectionTestCase(unittest.TestCase):

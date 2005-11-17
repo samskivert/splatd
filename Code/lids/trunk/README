@@ -1,6 +1,6 @@
-LIDS: LDAP Information Distribution Suite
+SPLAT!: Scaleable Periodic LDAP Attribute Transmogrifier
 
-	LIDS is a set of utilities designed to help keep information in an LDAP directory in sync with information outside of an LDAP directory.  This information can be any set of attributes on any object in the LDAP directory.
+	Splat! is a set of utilities designed to help keep information in an LDAP directory in sync with information outside of an LDAP directory.  This information can be any set of attributes on any object in the LDAP directory.
 
-lidd		LIDS Daemon
-lids-manage	LIDS CLI Client
+splatd          Splat Daemon
+splat-manage	Splat CLI Client

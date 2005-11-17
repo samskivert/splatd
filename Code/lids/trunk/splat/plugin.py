@@ -1,6 +1,6 @@
 # plugin.py vi:ts=4:sw=4:expandtab:
 #
-# LIDS plugins
+# Splat plugins
 # Authors:
 #       Landon Fuller <landonf@opendarwin.org>
 #       Will Barton <wbb4@opendarwin.org>
@@ -32,21 +32,21 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import lids
-from lids import LIDSError
+import splat
+from splat import SplatError
 
 import types
 import logging
 import ldap
 
 # Exceptions
-class LIDSPluginError(LIDSError):
+class SplatPluginError(SplatError):
     pass
 
 class HelperController(object):
     def __init__(self, name, module, interval, searchBase, searchFilter, requireGroup, helperOptions):
         """
-        Initialize LIDS Helper from module 
+        Initialize Splat Helper from module 
         @param name: Unique caller-assigned name. Helpers with non-unique names will overwrite previous additions when added to a daemon context.
         @param module: Module containing a single Helper subclass. Any other subclasses of Helper will be ignored.
         @param interval: Run interval in seconds. An interval of '0' will cause the helper to be run only once.
@@ -76,10 +76,10 @@ class HelperController(object):
                     break
 
         if (self.helper == None):
-            raise LIDSPluginError, "Helper module %s not found" % module
+            raise SplatPluginError, "Helper module %s not found" % module
 
         if (not hasattr(self.helper, "attributes")):
-            raise LIDSPluginError, "Helper missing required 'attributes' attribute."
+            raise SplatPluginError, "Helper missing required 'attributes' attribute."
 
         self.searchAttr = self.helper.attributes
 
@@ -103,7 +103,7 @@ class HelperController(object):
         """
         Find matching LDAP entries and fire off the helper
         """
-        logger = logging.getLogger(lids.LOG_NAME)
+        logger = logging.getLogger(splat.LOG_NAME)
 
         # XXX TODO LDAP scope support
         try:
@@ -131,12 +131,12 @@ class HelperController(object):
 
             try:
                 self.helper.work(context, entry)
-            except lids.LIDSError, e:
+            except splat.SplatError, e:
                 logger.error("Helper invocation for '%s' failed with error: %s" % (self.name, e))
 
 class Helper(object):
     """
-    Abstract class for LIDS helper plugins
+    Abstract class for Splat helper plugins
     """
     def parseOptions(self, options):
         """

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # test_daemon.py vi:ts=4:sw=4:expandtab:
 #
-# LDAP Information Distribution System
+# Scaleable Periodic LDAP Attribute Transmogrifier
 # Authors:
 #       Landon Fuller <landonf@threerings.net>
 #       Will Barton <wbb4@opendarwin.org>
@@ -33,20 +33,20 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-""" LIDS Daemon Unit Tests """
+""" Splat Daemon Unit Tests """
 
 from twisted.trial import unittest
 from twisted.internet import reactor
 
-from lids import daemon 
-from lids import plugin
-from lids import ldaputils
+from splat import daemon 
+from splat import plugin
+from splat import ldaputils
 
 import test_plugin
 import slapd
 
 # Useful Constants
-from lids.test import DATA_DIR
+from splat.test import DATA_DIR
 
 # Mock Helper
 class MockHelper(plugin.Helper):
@@ -75,12 +75,12 @@ MockHelper.attributes = ('uid',)
 
 # Test Cases
 class ContextTestCase(unittest.TestCase):
-    """ Test LIDS Helper """
+    """ Test Splat Helper """
     def setUp(self):
         self.slapd = slapd.LDAPServer()
         conn = ldaputils.Connection(slapd.SLAPD_URI)
         self.ctx = daemon.Context(conn)
-        self.hc = plugin.HelperController('test', 'lids.test.test_daemon', 1, 'ou=People,dc=example,dc=com', '(uid=john)', False, None)
+        self.hc = plugin.HelperController('test', 'splat.test.test_daemon', 1, 'ou=People,dc=example,dc=com', '(uid=john)', False, None)
 
         self.done = False
         self.failure = None

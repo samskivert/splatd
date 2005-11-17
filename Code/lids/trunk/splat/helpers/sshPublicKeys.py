@@ -34,10 +34,10 @@
 
 import sys, os, logging
 
-import lids
-from lids import plugin
+import splat
+from splat import plugin
 
-logger = logging.getLogger(lids.LOG_NAME)
+logger = logging.getLogger(splat.LOG_NAME)
 
 # Sub-process result codes
 SSH_ERR_NONE = 0
@@ -64,7 +64,7 @@ class Writer(plugin.Helper):
                 context.home = os.path.abspath(options[key])
                 splitHome = context.home.split('/')
                 if (splitHome[0] != ''):
-                    raise plugin.LIDSPluginError, "Relative paths for the home option are not permitted"
+                    raise plugin.SplatPluginError, "Relative paths for the home option are not permitted"
                 context.splitHome = splitHome
                 continue
             if (key == 'minuid'):
@@ -76,7 +76,7 @@ class Writer(plugin.Helper):
             if (key == 'command'):
                 context.command = options[key]
                 continue
-            raise plugin.LIDSPluginError, "Invalid option '%s' specified." % key
+            raise plugin.SplatPluginError, "Invalid option '%s' specified." % key
 
         return context
 
@@ -98,20 +98,20 @@ class Writer(plugin.Helper):
         if (context.home != None):
             givenPath = os.path.abspath(home).split('/')
             if (len(givenPath) < len(context.splitHome)):
-                raise plugin.LIDSPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, context.home, ldapEntry.dn)
+                raise plugin.SplatPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, context.home, ldapEntry.dn)
 
             for i in range(0, len(context.splitHome)):
                 if (context.splitHome[i] != givenPath[i]):
-                    raise plugin.LIDSPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, context.home, ldapEntry.dn)
+                    raise plugin.SplatPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, context.home, ldapEntry.dn)
 
         # Validate the UID
         if (context.minuid != None):
             if (context.minuid > uid):
-                raise plugin.LIDSPluginError, "LDAP Server returned uid %d less than specified minimum uid of %d for entry '%s'" % (uid, context.minuid, ldapEntry.dn)
+                raise plugin.SplatPluginError, "LDAP Server returned uid %d less than specified minimum uid of %d for entry '%s'" % (uid, context.minuid, ldapEntry.dn)
         # Validate the GID
         if (context.mingid != None):
             if (context.mingid > gid):
-                raise plugin.LIDSPluginError, "LDAP Server returned gid %d less than specified minimum gid of %d for entry '%s'" % (gid, context.mingid, ldapEntry.dn)
+                raise plugin.SplatPluginError, "LDAP Server returned gid %d less than specified minimum gid of %d for entry '%s'" % (gid, context.mingid, ldapEntry.dn)
 
 
         tmpfilename = "%s/.ssh/authorized_keys.tmp" % home
@@ -124,7 +124,7 @@ class Writer(plugin.Helper):
                 os.makedirs(home)
                 os.chown(home, uid, gid)
             except OSError, e:
-                raise plugin.LIDSPluginError, "Failed to create home directory, %s" % e
+                raise plugin.SplatPluginError, "Failed to create home directory, %s" % e
 
         # Fork and setuid to write the files
         pipe = os.pipe()
@@ -203,13 +203,13 @@ class Writer(plugin.Helper):
             inf.close()
 
         if (status == SSH_ERR_PRIVSEP):
-            raise plugin.LIDSPluginError, "Failed to drop privileges, %s" % errstr
+            raise plugin.SplatPluginError, "Failed to drop privileges, %s" % errstr
 
         if (status == SSH_ERR_MKDIR):
-            raise plugin.LIDSPluginError, "Failed to create SSH directory '%s', %s" % errstr
+            raise plugin.SplatPluginError, "Failed to create SSH directory '%s', %s" % errstr
 
         if (status == SSH_ERR_WRITE):
-            raise plugin.LIDSPluginError, "Failed to write SSH key, %s" % errstr
+            raise plugin.SplatPluginError, "Failed to write SSH key, %s" % errstr
 
 
     # A list of modifyable attributes for this helper, 

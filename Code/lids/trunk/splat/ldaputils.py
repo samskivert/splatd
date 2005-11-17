@@ -1,6 +1,6 @@
 # ldaputils.py vi:ts=4:sw=4:expandtab:
 #
-# LIDS LDAP support classes.
+# Splat LDAP support classes.
 # Authors:
 #       Landon Fuller <landonf@threerings.net>
 #       Will Barton <wbb4@opendarwin.org>
@@ -35,8 +35,8 @@
 import ldap, ldap.modlist, ldap.sasl
 import time
 
-import lids
-from lids import LIDSError
+import splat
+from splat import SplatError
 
 class Connection(object):
     """

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # test_plugin.py vi:ts=4:sw=4:expandtab:
 #
-# LDAP Information Distribution System
+# Scaleable Periodic LDAP Attribute Transmogrifier
 # Authors:
 #       Landon Fuller <landonf@threerings.net>
 #       Will Barton <wbb4@opendarwin.org>
@@ -37,12 +37,12 @@
 
 from twisted.trial import unittest
 
-from lids import plugin, ldaputils
+from splat import plugin, ldaputils
 import ldap
-from lids.test import slapd
+from splat.test import slapd
 
 # Useful Constants
-from lids.test import DATA_DIR
+from splat.test import DATA_DIR
 
 # Mock Helper
 class MockHelper(plugin.Helper):
@@ -69,14 +69,14 @@ MockHelper.attributes = ('dn',)
 
 # Test Cases
 class HelperWithControllerTestCase(unittest.TestCase):
-    """ Test LIDS Helper """
+    """ Test Splat Helper """
 
     def setUp(self):
         self.slapd = slapd.LDAPServer()
         self.conn = ldaputils.Connection(slapd.SLAPD_URI)
 
         options = {'test':'value'}
-        self.hc = plugin.HelperController('test', 'lids.test.test_plugin', 5, 'dc=example,dc=com', '(uid=john)', False, options)
+        self.hc = plugin.HelperController('test', 'splat.test.test_plugin', 5, 'dc=example,dc=com', '(uid=john)', False, options)
 
     def tearDown(self):
         self.slapd.stop()
