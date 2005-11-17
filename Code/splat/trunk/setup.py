@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # setup.py vi:ts=4:sw=4:expandtab:
 #
-# LDAP Information Distribution Suite
-# Author: Will Barton <wbb4@opendarwin.org>
+# Scaleable Periodic LDAP Attribute Transmogrifier
+# Authors:
+#        Will Barton <wbb4@opendarwin.org>
+#        Landon Fuller <landonf@threerings.net>
 #
 # Copyright (c) 2005 Three Rings Design, Inc.
 # All rights reserved.
@@ -32,26 +34,26 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from distutils.core import setup
-import lids 
+import splat 
 
-VERSION = lids.__version__
-AUTHOR = lids.__author__
-EMAIL = lids.__author_email__
-LICENSE = lids.__license__
+VERSION = splat.__version__
+AUTHOR = splat.__author__
+EMAIL = splat.__author_email__
+LICENSE = splat.__license__
 
 setup(
-    name = "lids",
+    name = "splat",
     version = VERSION,
     author = AUTHOR,
     author_email = EMAIL,
     license = LICENSE,
     scripts = [
-        'lids-manage',
+        'splat-manage',
         'lidd'
     ],
     packages = [
-        'lids',
-        'lids.helpers'
+        'splat',
+        'splat.helpers'
     ],
-    package_data = {'lids': ['data/lids_conf.xml']}
+    package_data = {'splat': ['data/splat_conf.xml']}
 )

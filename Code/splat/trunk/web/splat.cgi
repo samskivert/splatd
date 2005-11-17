@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-# lids.cgi vi:ts=4:sw=4:expandtab:
+# splat.cgi vi:ts=4:sw=4:expandtab:
 #
-# LDAP Information Distribution Suite
+# Scaleable Periodic LDAP Attribute Transmogrifier
 # Author: Will Barton <wbb4@opendarwin.org>
 #
 # Copyright (c) 2005 Three Rings Design, Inc.
@@ -35,13 +35,13 @@ import cgi, cgitb, Cookie
 import sys, traceback, os.path
 
 cgitb.enable()
-sys.path.append("/Users/will/Projects/ThreeRings/lids/")
+sys.path.append("/Users/will/Projects/ThreeRings/splat/")
 
-import lids
+import splat
 from session import Session, SessionError
 
 TEMPLATES="./"
-CONFIG="../lids.conf"
+CONFIG="../splat.conf"
 SECTIONS=["sshPublicKeys",]
 SCRIPTNAME = os.path.basename(sys.argv[0])
 
@@ -49,17 +49,17 @@ TMPDIR="/tmp"
 SESSION = None
 
 def output_text(text):
-    template = open(TEMPLATES + "lids_template.templ").read()
+    template = open(TEMPLATES + "splat_template.templ").read()
     print "Content-type: text/html\n\n"
     print template % {'content':text,}
     #'session':SESSION["id"]}
 
 def _error(text):
-    et = open(TEMPLATES + "lids_error.templ").read()
+    et = open(TEMPLATES + "splat_error.templ").read()
     return et % {'error':text}
 
 def _get_entry(conf, base_dn, user):
-    entry = lids.search(conf, None, base_dn, 
+    entry = splat.search(conf, None, base_dn, 
             "uid=" + user )[0]
     return entry
 
@@ -75,7 +75,7 @@ def _get_sections(conf, entry_dn):
 def _get_fields(conf, sections, entry):
     fields = {}
     for section in sections:
-        fs = lids.helper_attributes(conf, section, entry)
+        fs = splat.helper_attributes(conf, section, entry)
         ## XXX: there's a better way to merge contents of lists
         for f in fs: fields[f] = fs[f]
     return fields
@@ -91,7 +91,7 @@ def _get_session_cookie():
 # session.  
 def _checkauth():
     global SESSION
-    conf = lids.parse_config(CONFIG)
+    conf = splat.parse_config(CONFIG)
     base_dn = conf['ldap.base_dn']
 
     if not SESSION.has_key("username") or not SESSION.has_key("password"):
@@ -106,12 +106,12 @@ def _checkauth():
         raise SessionError("User DN does not exist")
     
     try:
-        lids.bind(conf, entry_dn, SESSION["password"])
+        splat.bind(conf, entry_dn, SESSION["password"])
         if not _get_session_cookie():
             c = Cookie.SimpleCookie()
             c["SESSION"] = SESSION["id"]
             print c
-    except lids.LIDSError:
+    except splat.SplatError:
         # if it failed, destroy the session
         SESSION.destroy()
         raise SessionError, "Unable to bind as user"
@@ -122,7 +122,7 @@ def authenticate():
     ## So that we can modify it
     global SESSION
     error = ""
-    conf = lids.parse_config(CONFIG)
+    conf = splat.parse_config(CONFIG)
 
     # Check for a session cookie
     s = _get_session_cookie()
@@ -149,7 +149,7 @@ def authenticate():
         except SessionError, e:
             error = _error("Username or password invalid: " + str(e))
 
-    authform = open(TEMPLATES + "lids_authform.templ").read()
+    authform = open(TEMPLATES + "splat_authform.templ").read()
     adict = {
             'username':form.getvalue("username", ""),
             'password':form.getvalue("password", ""),
@@ -162,7 +162,7 @@ def authenticate():
 def update_form():
     
     ## Get the configuration
-    conf = lids.parse_config(CONFIG)
+    conf = splat.parse_config(CONFIG)
     
     # Check to see if the form was submitted, if it was, return
     # and drop through to update()
@@ -177,7 +177,7 @@ def update_form():
     entry_dn = entry.getAttribute("dn")
 
     ## Load the form template
-    updateForm = open(TEMPLATES + "lids_updateform.templ").read()
+    updateForm = open(TEMPLATES + "splat_updateform.templ").read()
     
     ## Match the entry_dn to the search_base of the conf sections
     matched_sections = _get_sections(conf, entry_dn)
@@ -215,7 +215,7 @@ def update_form():
 
 def update():
     ## Get the configuration
-    conf = lids.parse_config(CONFIG)
+    conf = splat.parse_config(CONFIG)
     base_dn = conf['ldap.base_dn']
 
     ## Get the base dn for this user
@@ -232,9 +232,9 @@ def update():
     for field in fields:
         fdict[field] = form.getvalue(field)
 
-    ## call lids.modify
+    ## call splat.modify
     # XXX: Use user bind
-    lids.modify(conf, base_dn, fdict) #, entry_dn, SESSION["password"])
+    splat.modify(conf, base_dn, fdict) #, entry_dn, SESSION["password"])
 
     ## Print a success message?
     output_text("<p><b>Information successfully updated.</b></p>")

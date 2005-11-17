@@ -38,8 +38,8 @@ import os, signal, logging
 from twisted.internet import reactor
 import ZConfig
 
-import lids
-from lids import ldaputils, daemon, plugin
+import splat
+from splat import ldaputils, daemon, plugin
 
 def usage():
     print "%s: [-h] [-f config file] [-p pid file]" % sys.argv[0]
@@ -71,7 +71,7 @@ def main():
         sys.exit(1)
 
     # Load our configuration schema
-    schema = ZConfig.loadSchema(lids.CONFIG_SCHEMA)
+    schema = ZConfig.loadSchema(splat.CONFIG_SCHEMA)
     try:
         config, handler = ZConfig.loadConfig(schema, conf_file)
     except ZConfig.ConfigurationError, e:
@@ -82,7 +82,7 @@ def main():
     daemonize(config, pid_file)
 
     # Acquire our logger
-    logger = logging.getLogger(lids.LOG_NAME)
+    logger = logging.getLogger(splat.LOG_NAME)
 
     # Set up the daemon context 
     try:
@@ -142,7 +142,7 @@ def main():
                 # Add our newly minted group to the controller
                 hc.addGroup(groupFilter, groupOptions)
 
-        except plugin.LIDSPluginError, e:
+        except plugin.SplatPluginError, e:
             logger.critical("Error initializing service '%s': %s", service.getSectionName(), e)
             sys.exit(1)
 
@@ -192,8 +192,8 @@ def daemonize(config, pid_file):
     if (null > 2):
         os.close(null)
 
-    logger = logging.getLogger(lids.LOG_NAME)
-    logger.info("LIDS Starting up...")
+    logger = logging.getLogger(splat.LOG_NAME)
+    logger.info("splatd starting up...")
 
     # Detach the daemon
     try:
