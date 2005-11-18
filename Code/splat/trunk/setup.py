@@ -49,7 +49,7 @@ setup(
     license = LICENSE,
     scripts = [
         'splat-manage',
-        'lidd'
+        'splatd'
     ],
     packages = [
         'splat',
