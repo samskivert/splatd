@@ -422,6 +422,151 @@
 	</chapter>
 	
 	<chapter>
+		<title>Included Modules</title>
+		
+		<sect1>
+			<title>Introduction</title>
+
+			<para>
+				Splat was originally written for the purpose of distributing SSH keys from LDAP in a way that did
+				not require modifying the SSH daemon. 
+			</para>
+			<para>
+				In the process, we designed a generic daemon capable of pulling nearly any information from LDAP
+				and using it in any way you see fit. Synchronize your LDAP directory with a relational database, 
+				update an organizational chart, or build a x509 certificate revocation list. I encourage you to submit
+				your local modules for inclusion with the next Splat release.
+			</para>
+		</sect1>
+		
+		<sect1>
+			<title>SSH Public Keys</title>
+			
+			<para>
+				The SSH service module will extract SSH keys from LDAP, create a home directory if it does not
+				already exist, apply any key command limitations specified by the administrator, and atomically
+				overwrite the user's authorized_keys file.
+			</para>
+			
+			<sect2>
+				<title>LDAP Schema</title>
+
+				<para>
+					To store the SSH keys in LDAP, we created an sshAccount schema in our Three Rings Enterprise OID space. The
+					schema is included with the Splat distribution as <filename>schema/ssh.schema</filename>. The SSH
+					schema defines a new auxiliary object class, <emphasis>sshAccount</emphasis> and an optional
+					attribute, <emphasis>sshPublicKey</emphasis>. Additionally, <emphasis>sshAccount</emphasis> lists
+					<emphasis>uid</emphasis>, <emphasis>uidNumber</emphasis>, <emphasis>gidNumber</emphasis>,
+					and <emphasis>homeDirectory</emphasis> as mandatory attributes. Feel free to use this schema with
+					your own installation.
+					<programlisting>
+<![CDATA[attributetype ( oooSSHAttributes:1 NAME 'sshPublicKey'
+        DESC 'SSH Public Key'
+        EQUALITY octetStringMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40 )
+
+objectclass ( oooSSHClasses:1 NAME 'sshAccount'
+        DESC 'SSH Account'
+        SUP top AUXILIARY
+        MUST ( uid $ uidNumber $ gidNumber $ homeDirectory )
+        MAY ( sshPublicKey ) )]]>
+					</programlisting>
+
+				</para>
+			</sect2>
+			
+			
+			<sect2>
+				<title>SSH Service Options</title>
+				
+				<para>
+					The SSH service module supports <filename>authorized_keys</filename> command limitations and sanity checking
+					on the uid, gid, and home directory.
+				</para>
+				
+				<sect3>
+					<title>SSH Service Options</title>
+
+					<variablelist>
+						<varlistentry>
+							<term>home</term>
+							<listitem>Only write keys to subdirectories of the specified directory.</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term>minuid</term>
+							<listitem>Do not write keys for uids lower than minuid..</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term>mingid</term>
+							<listitem>Do note write keys for gids lower than mingid.</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term>command</term>
+							<listitem>Limit user to the specified command.</listitem>
+						</varlistentry>
+					</variablelist>
+				</sect3>
+				
+			</sect2>
+		</sect1>
+		
+		<sect1>
+			<title>User Mail Forward Files</title>
+			
+			<para>
+				The User Mail Forward service module was written by Kevin Van Vechten <email>kevin@opendarwin.org</email>
+				of the OpenDarwin project. The module will extract the <emphasis>mailForwardingAddress</emphasis> attribute
+				from LDAP, create a home directory if it does not already exist, and atomically overwrite the
+				user's <filename>.forward</filename> file.
+			</para>
+			
+			<sect2>
+				<title>LDAP Schema</title>
+
+				<para>
+					The <emphasis>mailForwardingAddress</emphasis> attribute can be found in several schema definitions.
+					 <itemizedlist>
+					 	<listitem>As an optional attribute of the qmailUser object class as defined in the Qmail LDAP schema.</listitem>
+					 	<listitem>As an optional attribute of the nsMessagingServerUser class in the Netscape LDAP schema.</listitem>
+					 </itemizedlist>
+				</para>
+			</sect2>
+			
+			
+			<sect2>
+				<title>User Mail Forwarding Service Options</title>
+				
+				<para>
+					The User Mail Forwarding service module supports  sanity checking on the uid, gid, and home directory.
+				</para>
+				
+				<sect3>
+					<title>SSH Service Options</title>
+
+					<variablelist>
+						<varlistentry>
+							<term>home</term>
+							<listitem>Only write forward files to subdirectories of the specified directory.</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term>minuid</term>
+							<listitem>Do not write forward files for uids lower than minuid..</listitem>
+						</varlistentry>
+						<varlistentry>
+							<term>mingid</term>
+							<listitem>Do note write forward files for gids lower than mingid.</listitem>
+						</varlistentry>
+					</variablelist>
+				</sect3>
+				
+			</sect2>			
+			
+		</sect1>
+		
+		
+	</chapter>
+	
+	<chapter>
 		<title>Writing New Modules</title>
 		<para>
 			This section is unfinished.
