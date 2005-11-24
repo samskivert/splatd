@@ -1,24 +1,25 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+	"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 	<head>
 		<title>splat: Scaleable Periodic LDAP Attribute Transmogrifier</title>
-		<meta http-equiv="Content-type" content="text/html;
+		<meta http-equiv="content-type" content="text/html;
 		charset=iso-8859-1"/>
-		<meta name="author" content="Will Barton (wbb4@opendarwin.org)"/>
-		<meta name="copyright" content="2004, OpenDarwin"/>
-		<meta name="robots" content="all"/>
 		<link rel="stylesheet" type="text/css" href="default.css"/>
 	</head>
 	<body>
 		<h1>Splat: Scaleable Periodic LDAP Attribute Transmogrifier</h1>
+
 		<ul id="nav">
 			<li><a href="#intro">Introduction</a></li>
 			<li><a href="#get">Download</a></li>
 			<li><a href="#require">Requirements</a></li>
-			<li><a href="#documentation">Documentation</a></li>
+			<li><a href="#support">Support</a></li>
 			<li><a href="#cav">Caveats</a></li>
 		</ul>
 
-		<a name="intro"><h2>Introduction</h2></a>
+		<h2><a id="intro">Introduction</a></h2>
 		<p>
 			Splat is a set of utilities designed to help keep information in
 			an LDAP directory in sync with information outside of an LDAP directory.
@@ -27,17 +28,18 @@
 
 		<p>
 			Splat currently supports writing out the following information:
-			<ul>
-				<li>SSH Public Keys</li>
-				<li>User .forward Files</li>
-			</ul>
 		</p>
+
+		<ul>
+			<li>SSH Public Keys</li>
+			<li>User .forward Files</li>
+		</ul>
 
 		<p>
 			You may send patches, bug reports, and complaints to: landonf@threerings.net
 		</p>
 
-		<a name="get"><h2>Download</h2></a>
+		<h2><a id="get">Download</a></h2>
 		<p>
 			The source for Splat 1.0-beta5 can be downloaded
 			<a href="splat-1.0-beta5.tar.gz">here</a>, and verified against this <a
@@ -47,17 +49,15 @@
 			My public key (key ID 4FF5E663) can be downloaded from
 			<a href="http://www.opendarwin.org/~landonf/landonf-gpg.pubkey">OpenDarwin</a>
 			and the
-			<a href="http://pgp.mit.edu:11371/pks/lookup?op=get&search=0x4FF5E663">MIT PGP Keyserver</a>.
+			<a href="http://pgp.mit.edu:11371/pks/lookup?op=get&#38;search=0x4FF5E663">MIT PGP Keyserver</a>.
 				
 		</p>
-		<a name="require"><h2>Requirements</h2></a>
-		<p>
-			<ul>
-				<li><a href="http://www.python.org">Python 2.4</a></li>
-				<li><a href="http://twistedmatrix.com">Twisted Networking Framework</a></li>
-				<li><a href="http://python-ldap.sourceforge.net/">Python LDAP</a></li>
-			</ul>
-		</p>
+		<h2><a id="require">Requirements</a></h2>
+		<ul>
+			<li><a href="http://www.python.org">Python 2.4</a></li>
+			<li><a href="http://twistedmatrix.com">Twisted Networking Framework</a></li>
+			<li><a href="http://python-ldap.sourceforge.net/">Python LDAP</a></li>
+		</ul>
 		<p>
 			Splat uses the standard Python distutils.
 			To install, run setup.py:
@@ -71,12 +71,12 @@
 			file, <em>splat.conf</em>, is supplied with the source distribution.
 		</p>
 
-		<a name="Documentation"><h2>Documentation</h2></a>
+		<h2><a id="support">Support</a></h2>
 		<p>
-			Coming soon.
+			Please refer to the <a href="manual/">Splat Manual</a>.
 		</p>
 		
-		<a name="caveats"><h2>Caveats</h2></a>
+		<h2><a id="caveats">Caveats</a></h2>
 		<ul>
 			<li>
 				Splat current stores the full search result in memory. This may cause
