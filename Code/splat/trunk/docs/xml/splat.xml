@@ -569,7 +569,7 @@ objectclass ( oooSSHClasses:1 NAME 'sshAccount'
 	<chapter>
 		<title>Writing New Modules</title>
 		<para>
-			This section is unfinished.
+			This section is unfinished. For an example module, refer to <filename>splat/helpers/sshPublicKeys.py</filename>
 		</para>
 	</chapter>
 </book>
