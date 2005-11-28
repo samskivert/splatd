@@ -22,7 +22,7 @@ WRKSRC=		${WRKDIR}/${DISTNAME}
 
 USE_PYTHON=	2.2+
 USE_PYDISTUTILS=	yes
-USE_RC_SUBR=	splat.sh
+USE_RC_SUBR=	splatd.sh
 SUB_LIST+=	PYTHON_CMD=${PYTHON_CMD}
 
 post-install:
