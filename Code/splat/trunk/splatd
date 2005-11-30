@@ -196,9 +196,9 @@ def daemonize(config, pid_file):
     """ Detach a process from the terminal and run it as a daemon """
     # Redirect stdin, stdout, and stderr to /dev/null
     null = os.open('/dev/null', os.O_RDWR)
-    os.dup2(null, stdin)
-    os.dup2(null, stdout)
-    os.dup2(null, stderr)
+    os.dup2(null, sys.stdin.fileno())
+    os.dup2(null, sys.stdout.fileno())
+    os.dup2(null, sys.stderr.fileno())
 
     if (null > 2):
         os.close(null)
