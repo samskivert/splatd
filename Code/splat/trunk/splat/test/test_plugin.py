@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # test_plugin.py vi:ts=4:sw=4:expandtab:
 #
-# Scaleable Periodic LDAP Attribute Transmogrifier
+# Scalable Periodic LDAP Attribute Transmogrifier
 # Authors:
 #       Landon Fuller <landonf@threerings.net>
 #       Will Barton <wbb4@opendarwin.org>
