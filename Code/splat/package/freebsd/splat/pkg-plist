@@ -19,6 +19,9 @@ sbin/splatd
 %%PYTHON_SITELIBDIR%%/splat/helpers/sshPublicKeys.py
 %%PYTHON_SITELIBDIR%%/splat/helpers/sshPublicKeys.pyc
 %%PYTHON_SITELIBDIR%%/splat/helpers/sshPublicKeys.pyo
+%%PYTHON_SITELIBDIR%%/splat/helpers/mailForwardingAddress.py
+%%PYTHON_SITELIBDIR%%/splat/helpers/mailForwardingAddress.pyc
+%%PYTHON_SITELIBDIR%%/splat/helpers/mailForwardingAddress.pyo
 %%PYTHON_SITELIBDIR%%/splat/data/splat_conf.xml
 @dirrm %%PYTHON_SITELIBDIR%%/splat/helpers
 @dirrm %%PYTHON_SITELIBDIR%%/splat/data
