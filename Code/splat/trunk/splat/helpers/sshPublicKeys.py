@@ -56,6 +56,9 @@ class WriterContext(object):
         self.command = None
 
 class Writer(plugin.Helper):
+    # Required Attributes
+    attributes = ('sshPublicKey', 'homeDirectory', 'gidNumber', 'uidNumber')
+
     def parseOptions(self, options):
         context = WriterContext()
 
@@ -210,14 +213,3 @@ class Writer(plugin.Helper):
 
         if (status == SSH_ERR_WRITE):
             raise plugin.SplatPluginError, "Failed to write SSH key, %s" % errstr
-
-
-    # A list of modifyable attributes for this helper, 
-    # for interactive modifications (i.e. web interface)
-    def attributes(self, ldapEntry):
-        """ Return the modifyable attribues and their current values """
-        key = ldapEntry.attributes.get("sshPublicKey")
-        return {'sshPublicKey':key,}
-
-# Required Attributes
-Writer.attributes = ('sshPublicKey', 'homeDirectory', 'gidNumber', 'uidNumber')

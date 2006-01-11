@@ -57,6 +57,9 @@ class WriterContext(object):
         self.splitHome = None
 
 class Writer(plugin.Helper):
+    # Required Attributes
+    attributes = ('mailForwardingAddress', 'homeDirectory', 'gidNumber', 'uidNumber')
+
     def parseOptions(self, options):
         context = WriterContext()
 
@@ -204,14 +207,3 @@ class Writer(plugin.Helper):
 
         if (status == HELPER_ERR_WRITE):
             raise plugin.SplatPluginError, "Failed to write .forward, %s" % errstr
-
-
-    # A list of modifyable attributes for this helper, 
-    # for interactive modifications (i.e. web interface)
-    def attributes(self, ldapEntry):
-        """ Return the modifyable attribues and their current values """
-        address = ldapEntry.attributes.get("mailForwardingAddress")
-        return {'mailForwardingAddress':address,}
-
-# Required Attributes
-Writer.attributes = ('mailForwardingAddress', 'homeDirectory', 'gidNumber', 'uidNumber')
