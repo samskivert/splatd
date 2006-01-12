@@ -102,6 +102,10 @@ tt {
 	color: #673;
 }
 
+.methodname {
+	color: #009999;
+}
+
 .uri {
 	font-family: "Courier New", Courier;
 	font-weight: bold;
