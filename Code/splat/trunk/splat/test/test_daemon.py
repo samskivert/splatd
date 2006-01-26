@@ -116,7 +116,8 @@ class ContextTestCase(unittest.TestCase):
 
     def test_start(self):
         self.ctx.addHelper(self.hc)
-        self.ctx.start()
+        d = self.ctx.start()
+        d.addCallback(self._cbDaemonResult)
 
         # Add a timeout
         timeout = reactor.callLater(5, self.failed, "timeout")
@@ -135,3 +136,20 @@ class ContextTestCase(unittest.TestCase):
 
         if (self.hc.helper.failure):
             self.fail(self.hc.helper.failure)
+
+        self.ctx.stop()
+
+        return d
+
+    def _cbDaemonResult(self, result):
+        self.assertEquals(result, True)
+
+    def test_stop(self):
+        self.ctx.addHelper(self.hc)
+        d = self.ctx.start()
+
+        d.addCallback(self._cbDaemonResult)
+
+        self.ctx.stop()
+
+        return d

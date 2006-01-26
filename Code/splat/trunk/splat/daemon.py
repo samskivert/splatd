@@ -39,7 +39,7 @@
 import splat
 from splat import plugin
 
-from twisted.internet import reactor, task
+from twisted.internet import reactor, task, defer
 
 import ldap, logging
 
@@ -90,6 +90,23 @@ class Context(object):
             t = task.LoopingCall(self._invokeHelper, name)
             t.start(ctrl.interval)
             self.tasks[name] = t
+
+        # Provide the caller our deferred result
+        self.deferResult = defer.Deferred()
+        return self.deferResult
+
+    def stop(self):
+        # Stop all running tasks
+        try:
+            for key in self.tasks.keys():
+                task = self.tasks.pop(key)
+                task.stop()
+        except Exception, e:
+            self.deferResult.errback(e)
+            return
+
+        # All tasks stopped.
+        self.deferResult.callback(True)
 
     def run(self):
         """
