@@ -36,7 +36,7 @@
 """ Splat Daemon Unit Tests """
 
 from twisted.trial import unittest
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 
 from splat import daemon 
 from splat import plugin
@@ -48,18 +48,29 @@ import slapd
 # Useful Constants
 from splat.test import DATA_DIR
 
+# Faked Exception
+class FakeException(Exception):
+    pass
+
 # Mock Helper
 class MockHelper(plugin.Helper):
+    attributes = ('uid',)
     def __init__(self):
         super(plugin.Helper, self).__init__()
         self.done = False
         self.failure = None
+        self.exception = False
 
     def work(self, context, ldapEntry):
+        # Blow a gasket if an exception has been provided
+        if (self.exception == True):
+            self.failure = "Forced exception"
+            self.done = True
+            raise FakeException, "Forced exception"
+
         uid = ldapEntry.attributes['uid'][0]
         if(uid != 'john'):
             self.failure = "Incorrect LDAP attribute returned (Wanted: 'john', Got: '%s')" % uid
-            self.done = True
         self.done = True
 
     def parseOptions(self, options):
@@ -70,8 +81,6 @@ class MockHelper(plugin.Helper):
 
     def convert(self):
         pass
-
-MockHelper.attributes = ('uid',)
 
 # Test Cases
 class ContextTestCase(unittest.TestCase):
@@ -114,6 +123,36 @@ class ContextTestCase(unittest.TestCase):
         if (self.hc.helper.failure):
             self.fail(self.hc.helper.failure)
 
+    def _cbDaemonError(self, result):
+        self.ctx.stop()
+        self.assertNotEqual(result, self.ctx)
+
+    def _ebDaemonError(self, failure):
+        failure.trap(FakeException)
+
+    def test_daemonContextErrorHandling(self):
+        self.ctx.addHelper(self.hc)
+        # Force a run error
+        self.hc.helper.exception = True
+
+        d = self.ctx.start()
+        d.addCallback(self._cbDaemonError)
+        d.addErrback(self._ebDaemonError)
+
+        # Add a timeout
+        timeout = reactor.callLater(5, self.failed, "timeout")
+
+        # Wait for the work method to be called, or for a timeout to occur
+        while (not self.hc.helper.done or self.failure):
+            reactor.iterate(0.1)
+
+        timeout.cancel()
+
+        if (self.failure):
+            self.fail(self.failure)
+
+        return d
+
     def test_start(self):
         self.ctx.addHelper(self.hc)
         d = self.ctx.start()
@@ -130,6 +169,7 @@ class ContextTestCase(unittest.TestCase):
 
         # Kill the task
         self.ctx.removeHelper('test')
+        self.ctx.stop()
 
         if (self.failure):
             self.fail(self.failure)
@@ -137,12 +177,10 @@ class ContextTestCase(unittest.TestCase):
         if (self.hc.helper.failure):
             self.fail(self.hc.helper.failure)
 
-        self.ctx.stop()
-
         return d
 
     def _cbDaemonResult(self, result):
-        self.assertEquals(result, True)
+        self.assertEquals(result, self.ctx)
 
     def test_stop(self):
         self.ctx.addHelper(self.hc)

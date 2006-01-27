@@ -106,11 +106,7 @@ class HelperController(object):
         logger = logging.getLogger(splat.LOG_NAME)
 
         # XXX TODO LDAP scope support
-        try:
-            entries = ldapConnection.search(self.searchBase, ldap.SCOPE_SUBTREE, self.searchFilter, self.searchAttr)
-        except ldap.LDAPError, e:
-            logger.error("LDAP Search error for helper %s: %s" % (self.name, e))
-            return
+        entries = ldapConnection.search(self.searchBase, ldap.SCOPE_SUBTREE, self.searchFilter, self.searchAttr)
 
         # Iterate over the results
         for entry in entries:
