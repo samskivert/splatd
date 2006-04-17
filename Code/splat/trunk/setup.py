@@ -48,7 +48,6 @@ setup(
     author_email = EMAIL,
     license = LICENSE,
     scripts = [
-        'splat-manage',
         'splatd'
     ],
     packages = [

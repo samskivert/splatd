@@ -151,10 +151,3 @@ class Context(object):
             # All tasks stopped.
             # report success.
             self.deferResult.callback(self)
-
-    def run(self):
-        """
-        Run the associated helper tasks once
-        """
-        for name, ctrl in self.svc.items():
-                self._invokeHelper(name)

@@ -116,13 +116,6 @@ class ContextTestCase(unittest.TestCase):
         self.ctx.start()
         self.ctx.removeHelper('test')
 
-    def test_run(self):
-        self.ctx.addHelper(self.hc)
-        self.ctx.run()
-
-        if (self.hc.helper.failure):
-            self.fail(self.hc.helper.failure)
-
     def _cbDaemonError(self, result):
         self.ctx.stop()
         self.assertNotEqual(result, self.ctx)

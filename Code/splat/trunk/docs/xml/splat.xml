@@ -79,16 +79,14 @@
                 </para>
                 
                 <para>
-                     The Splat library will be installed in the Python site-packages directory. The <filename>splatd</filename> daemon and
-                     the <filename>splat-manage</filename> command line tool will be installed in the Python-specified bin directory. An example configuration file,
-                     <filename>splat.conf</filename>, is supplied with the source distribution.
+                     The Splat library will be installed in the Python site-packages directory. The <filename>splatd</filename> daemon will be installed in the Python-specified bin directory. An example configuration file, <filename>splat.conf</filename>, is supplied with the source distribution.
                 </para>
                 <note>
                     <para>
-                        The Splat command line tools will be installed in the bin directory as specific by Python.
+                        The Splat daemon will be installed in the bin directory as specific by Python.
                         On certain operating systems, this may not be what you expect. For example, Mac OS X might install
-                        <filename>splat-manage</filename> and <filename>splatd</filename> in
-                        <filename class="directory">/Library/Python/2.3/bin</filename>. Feel free to move the binaries
+                        <filename>splatd</filename> in
+                        <filename class="directory">/Library/Python/2.3/bin</filename>. Feel free to move the binary 
                         after the installation is complete.
                     </para>
                 </note>
@@ -399,15 +397,6 @@
         <sect1>
             <title>Running Splat</title>
 
-            <sect2>
-                <title>splat-manage</title>
-                <para>
-                    <filename>splat-manage</filename> provides some simple tools for debugging your splat configuration. You can
-                    specify a different bind DN, list all records that match a specified service name, or run the helper once for a specified service.
-                    For usage information, run <filename>splat-manage</filename> with no arguments.
-                </para>
-            </sect2>
-        
             <sect2>
                 <title>splatd</title>
                 <para>
