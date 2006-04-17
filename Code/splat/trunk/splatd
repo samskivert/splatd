@@ -41,209 +41,215 @@ import ZConfig
 import splat
 from splat import ldaputils, daemon, plugin
 
-def usage():
-    print "%s: [-h] [-f config file] [-p pid file]" % sys.argv[0]
-    print "    -h             Print usage (this message)"
-    print "    -d             Debug mode. Will not fork."
-    print "    -f <config>    Use configuration file"
-    print "    -p <pidfile>   Write daemon pid to file"
+class Main(object):
+    """
+    Implements Splatd's Main Runloop
+    """
 
-def main():
-    conf_file = None
-    pid_file = None
-    debug_flag = False
+    def usage(self):
+        print "%s: [-h] [-f config file] [-p pid file]" % sys.argv[0]
+        print "    -h             Print usage (this message)"
+        print "    -d             Debug mode. Will not fork."
+        print "    -f <config>    Use configuration file"
+        print "    -p <pidfile>   Write daemon pid to file"
+
+    def main(self):
+        conf_file = None
+        pid_file = None
+        debug_flag = False
     
-    try:
-        opts,args = getopt.getopt(sys.argv[1:], "hvdf:p:")
-    except getopt.GetoptError:
-        usage()
-        sys.exit(2)
-
-    for opt,arg in opts:
-        if opt == "-h":
-            usage()
-            sys.exit()
-        if opt == "-d":
-            debug_flag = True
-        if opt == "-f":
-            conf_file = arg
-        if opt == "-p":
-            pid_file = arg
-
-    if (conf_file == None):
-        usage()
-        sys.exit(1)
-
-    # Close all file descriptors before doing anything else
-    if (not debug_flag):
-        close_fds()
-
-    # Load our configuration schema
-    schema = ZConfig.loadSchema(splat.CONFIG_SCHEMA)
-    try:
-        config, handler = ZConfig.loadConfig(schema, conf_file)
-    except ZConfig.ConfigurationError, e:
-        print "Configuration Error: %s" % e
-        sys.exit(1)
-
-    # Set up logging
-    try:
-        config.Logging()
-    except Exception, e:
-        print "Log initialization failed: %s" % e
-        sys.exit(1)
-
-    # Daemonize
-    if (not debug_flag):
-        daemonize(config, pid_file)
-
-    # Acquire our logger
-    logger = logging.getLogger(splat.LOG_NAME)
-
-    # Set up the daemon context 
-    try:
-        conn = ldaputils.Connection(config.LDAP.uri)
-        conn.simple_bind(config.LDAP.binddn, config.LDAP.password)
-    except ldap.INVALID_CREDENTIALS:
-        logger.critical("Authentication failed for server: %s", config.LDAP.uri)
-        sys.exit(1)
-    except ldap.NO_SUCH_OBJECT:
-        logger.critical("Authentication failed for server: %s, no such object. Is your Bind DN correct?", config.LDAP.uri)
-        sys.exit(1)
-    except ldap.SERVER_DOWN:
-        logger.critical("Could not contact server: %s", config.LDAP.uri)
-        sys.exit(1)
-
-    ctx = daemon.Context(conn)
-
-    # Load all service helpers
-    for service in config.Service:
-        options = {}
-
-        # Set up service options
-        for opt in service.Option:
-            options[opt.getSectionName()] = opt.value
-
         try:
-            hc = plugin.HelperController(service.getSectionName(), service.helper, service.frequency, service.searchbase,
-                    service.searchfilter, service.requiregroup, options)
+            opts,args = getopt.getopt(sys.argv[1:], "hvdf:p:")
+        except getopt.GetoptError:
+            self.usage()
+            sys.exit(2)
 
-            # Find all per-service groups, if any
-            for group in service.Group:
+        for opt,arg in opts:
+            if opt == "-h":
+                self.usage()
+                sys.exit()
+            if opt == "-d":
+                debug_flag = True
+            if opt == "-f":
+                conf_file = arg
+            if opt == "-p":
+                pid_file = arg
 
-                # Use the default basedn if necessary
-                if (group.searchbase == None):
-                    basedn = config.LDAP.basedn
-                else:
-                    basedn = group.searchbase
-
-                # Instantiate our group filter
-                if (group.memberattribute):
-                    groupFilter = ldaputils.GroupFilter(basedn, ldap.SCOPE_SUBTREE, group.searchfilter, group.memberattribute)
-                else:
-                    groupFilter = ldaputils.GroupFilter(basedn, ldap.SCOPE_SUBTREE, group.searchfilter)
-
-                # Load group-specific helper options
-                groupOptions = {}
-                groupOptions.update(options)
-
-                for opt in group.Option:
-                    if (opt.value == None):
-                        # Remove deleted options
-                        groupOptions.pop(opt.getSectionName())
-                    else:
-                        # Add additional group options
-                        groupOptions[opt.getSectionName()] = opt.value
-
-                # Add our newly minted group to the controller
-                hc.addGroup(groupFilter, groupOptions)
-
-        except plugin.SplatPluginError, e:
-            logger.critical("Error initializing service '%s': %s", service.getSectionName(), e)
+        if (conf_file == None):
+            self.usage()
             sys.exit(1)
 
-        ctx.addHelper(hc)
+        # Close all file descriptors before doing anything else
+        if (not debug_flag):
+            self.close_fds()
 
-    # Add our daemon context to the runloop
-    ctx.start()
-
-    # Fire up the reactor
-    reactor.run()
-
-def close_fds():
-    """ Close all FDs other than stdin, stdout, and stderr """
-    # Close all open files.
-    try:
-        maxfd = os.sysconf("SC_OPEN_MAX")
-    except (AttributeError, ValueError):
-        maxfd = 1024       # default maximum
-
-    # Avoid closing stdout/stdin/stderr so we can still print a log
-    # initialization error message ...
-    stdin = sys.stdin.fileno()
-    stdout = sys.stdout.fileno()
-    stderr = sys.stderr.fileno()
-
-    for fd in range(0, maxfd):
+        # Load our configuration schema
+        schema = ZConfig.loadSchema(splat.CONFIG_SCHEMA)
         try:
-            if (fd != stdout and fd != stderr and fd != stdin):
-                os.close(fd)
-        except OSError:
-            # Ignore EBADF
-            pass
+            config, handler = ZConfig.loadConfig(schema, conf_file)
+        except ZConfig.ConfigurationError, e:
+            print "Configuration Error: %s" % e
+            sys.exit(1)
 
-def daemonize(config, pid_file):
-    """ Detach a process from the terminal and run it as a daemon """
-    # Redirect stdin, stdout, and stderr to /dev/null
-    null = os.open('/dev/null', os.O_RDWR)
-    os.dup2(null, sys.stdin.fileno())
-    os.dup2(null, sys.stdout.fileno())
-    os.dup2(null, sys.stderr.fileno())
-
-    if (null > 2):
-        os.close(null)
-
-    logger = logging.getLogger(splat.LOG_NAME)
-    logger.info("splatd starting up...")
-
-    # Detach the daemon
-    try:
-        pid = os.fork()
-    except OSError, e:
-        logger.critical("An OSError occurred in daemonize(): %s", e)
-        sys.exit(1)
-
-    if pid == 0:
-        # become the session leader
-        os.setsid()
-
-        # ignore SIGHUP, since children are sent SIGHUP when the parent
-        # terminates
-        signal.signal(signal.SIGHUP, signal.SIG_IGN)
-
+        # Set up logging
         try:
-            # second child to prevent zombies
+            config.Logging()
+        except Exception, e:
+            print "Log initialization failed: %s" % e
+            sys.exit(1)
+
+        # Daemonize
+        if (not debug_flag):
+            self.daemonize(config, pid_file)
+
+        # Acquire our logger
+        logger = logging.getLogger(splat.LOG_NAME)
+
+        # Set up the daemon context 
+        try:
+            conn = ldaputils.Connection(config.LDAP.uri)
+            conn.simple_bind(config.LDAP.binddn, config.LDAP.password)
+        except ldap.INVALID_CREDENTIALS:
+            logger.critical("Authentication failed for server: %s", config.LDAP.uri)
+            sys.exit(1)
+        except ldap.NO_SUCH_OBJECT:
+            logger.critical("Authentication failed for server: %s, no such object. Is your Bind DN correct?", config.LDAP.uri)
+            sys.exit(1)
+        except ldap.SERVER_DOWN:
+            logger.critical("Could not contact server: %s", config.LDAP.uri)
+            sys.exit(1)
+
+        ctx = daemon.Context(conn)
+
+        # Load all service helpers
+        for service in config.Service:
+            options = {}
+
+            # Set up service options
+            for opt in service.Option:
+                options[opt.getSectionName()] = opt.value
+
+            try:
+                hc = plugin.HelperController(service.getSectionName(), service.helper, service.frequency, service.searchbase,
+                        service.searchfilter, service.requiregroup, options)
+
+                # Find all per-service groups, if any
+                for group in service.Group:
+
+                    # Use the default basedn if necessary
+                    if (group.searchbase == None):
+                        basedn = config.LDAP.basedn
+                    else:
+                        basedn = group.searchbase
+
+                    # Instantiate our group filter
+                    if (group.memberattribute):
+                        groupFilter = ldaputils.GroupFilter(basedn, ldap.SCOPE_SUBTREE, group.searchfilter, group.memberattribute)
+                    else:
+                        groupFilter = ldaputils.GroupFilter(basedn, ldap.SCOPE_SUBTREE, group.searchfilter)
+
+                    # Load group-specific helper options
+                    groupOptions = {}
+                    groupOptions.update(options)
+
+                    for opt in group.Option:
+                        if (opt.value == None):
+                            # Remove deleted options
+                            groupOptions.pop(opt.getSectionName())
+                        else:
+                            # Add additional group options
+                            groupOptions[opt.getSectionName()] = opt.value
+
+                    # Add our newly minted group to the controller
+                    hc.addGroup(groupFilter, groupOptions)
+
+            except plugin.SplatPluginError, e:
+                logger.critical("Error initializing service '%s': %s", service.getSectionName(), e)
+                sys.exit(1)
+
+            ctx.addHelper(hc)
+
+        # Add our daemon context to the runloop
+        ctx.start()
+
+        # Fire up the reactor
+        reactor.run()
+
+    def close_fds(self):
+        """ Close all FDs other than stdin, stdout, and stderr """
+        # Close all open files.
+        try:
+            maxfd = os.sysconf("SC_OPEN_MAX")
+        except (AttributeError, ValueError):
+            maxfd = 1024       # default maximum
+
+        # Avoid closing stdout/stdin/stderr so we can still print a log
+        # initialization error message ...
+        stdin = sys.stdin.fileno()
+        stdout = sys.stdout.fileno()
+        stderr = sys.stderr.fileno()
+
+        for fd in range(0, maxfd):
+            try:
+                if (fd != stdout and fd != stderr and fd != stdin):
+                    os.close(fd)
+            except OSError:
+                # Ignore EBADF
+                pass
+
+    def daemonize(self, config, pid_file):
+        """ Detach a process from the terminal and run it as a daemon """
+        # Redirect stdin, stdout, and stderr to /dev/null
+        null = os.open('/dev/null', os.O_RDWR)
+        os.dup2(null, sys.stdin.fileno())
+        os.dup2(null, sys.stdout.fileno())
+        os.dup2(null, sys.stderr.fileno())
+
+        if (null > 2):
+            os.close(null)
+
+        logger = logging.getLogger(splat.LOG_NAME)
+        logger.info("splatd starting up...")
+
+        # Detach the daemon
+        try:
             pid = os.fork()
         except OSError, e:
             logger.critical("An OSError occurred in daemonize(): %s", e)
             sys.exit(1)
 
         if pid == 0:
-            # Write out our pid file
-            if (pid_file):
-                f = open(pid_file, 'w')
-                f.write("%d\n" % os.getpid())
-                f.close()
+            # become the session leader
+            os.setsid()
 
-            # Make sure we don't keep any directory in use
-            os.chdir("/")
-            os.umask(022)
+            # ignore SIGHUP, since children are sent SIGHUP when the parent
+            # terminates
+            signal.signal(signal.SIGHUP, signal.SIG_IGN)
+
+            try:
+                # second child to prevent zombies
+                pid = os.fork()
+            except OSError, e:
+                logger.critical("An OSError occurred in daemonize(): %s", e)
+                sys.exit(1)
+
+            if pid == 0:
+                # Write out our pid file
+                if (pid_file):
+                    f = open(pid_file, 'w')
+                    f.write("%d\n" % os.getpid())
+                    f.close()
+
+                # Make sure we don't keep any directory in use
+                os.chdir("/")
+                os.umask(022)
+            else:
+                os._exit(0)
         else:
             os._exit(0)
-    else:
-        os._exit(0)
 
-    return 0
+        return 0
 
 if __name__ == "__main__":
-    main()
+    main = Main()
+    main.main()
