@@ -106,6 +106,7 @@ class Main(object):
             self.logger.critical("An unrecoverable error occured: %s", e)
             # Unrecoverable, stop the reactor
             reactor.stop()
+            return
 
         except Exception, e:
             self.logger.critical("An unhandled error occured: %s", e)
