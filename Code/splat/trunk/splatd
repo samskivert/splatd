@@ -174,7 +174,7 @@ class Main(object):
 
         # Daemonize
         if (not debug_flag):
-            self.daemonize(config, pid_file)
+            self.daemonize(self.config, pid_file)
 
         # Acquire our logger
         self.logger = logging.getLogger(splat.LOG_NAME)
@@ -299,6 +299,8 @@ class Main(object):
         if (null > 2):
             os.close(null)
 
+        # Re-initialize our logger
+        self.logger = logging.getLogger(splat.LOG_NAME)
         self.logger.info("splatd starting up...")
 
         # Detach the daemon
