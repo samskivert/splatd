@@ -5,10 +5,10 @@
 # $FreeBSD: $
 
 PORTNAME=	splat
-PORTVERSION=	1.0beta7
+PORTVERSION=	1.0beta9
 CATEGORIES=	net python
 MASTER_SITES=	http://dpw.threerings.net/projects/splat/
-DISTNAME=	${PORTNAME}-1.0-beta7
+DISTNAME=	${PORTNAME}-1.0-beta9
 
 MAINTAINER=	landonf@opendarwin.org
 COMMENT=	LIDS is the LDAP Information Distribution System
