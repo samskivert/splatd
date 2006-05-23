@@ -49,7 +49,7 @@ from splat.test import slapd
 from splat.test import DATA_DIR
 
 # Test Cases
-class SSHPublicKeystestCase(unittest.TestCase):
+class HomeDirtestCase(unittest.TestCase):
     """ Test Splat Home Directory Helper """
 
     def setUp(self):
@@ -61,7 +61,8 @@ class SSHPublicKeystestCase(unittest.TestCase):
             'home':'/home',
             'minuid':'0',
             'mingid':'0',
-            'skelDirs':'/usr/share/skel'
+            'skelDirs':'/usr/share/skel',
+            'postCreate':'/bin/echo'
         }
 
         self.hc = plugin.HelperController('test', 'splat.helpers.homeDirectory', 5, 'dc=example,dc=com', '(uid=john)', False, options)
@@ -94,10 +95,18 @@ class SSHPublicKeystestCase(unittest.TestCase):
         self.context = self.hc.helper.parseOptions(options)
         self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
         
-    def test_option_skelDir(self):
+    def test_option_skelDirs(self):
         """ Test Skeletal Directory Validation """
         options = { 
-            'skelDir':'/asdf/jkl'
+            'skelDirs':'/asdf/jkl'
+        }
+        self.context = self.hc.helper.parseOptions(options)
+        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
+
+    def test_option_postCreate(self):
+        """ Test Post Create Script Validation """
+        options = { 
+            'postCreate':'/asdf/jkl'
         }
         self.context = self.hc.helper.parseOptions(options)
         self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])

@@ -112,10 +112,10 @@ class Writer(plugin.Helper):
                 context.mingid = int(options[key])
                 continue
             if (key == 'skelDirs'):
-                context.skelDirs = int(options[key])
+                context.skelDirs = os.path.abspath(options[key])
                 continue
             if (key == 'postCreate'):
-                context.postCreate = int(options[key])
+                context.postCreate = os.path.abspath(options[key])
                 continue
             raise plugin.SplatPluginError, "Invalid option '%s' specified." % key
 
