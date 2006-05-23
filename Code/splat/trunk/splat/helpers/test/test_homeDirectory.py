@@ -61,7 +61,7 @@ class HomeDirtestCase(unittest.TestCase):
             'home':'/home',
             'minuid':'0',
             'mingid':'0',
-            'skelDirs':'/usr/share/skel',
+            'skelDirs':('/usr/share/skel','/etc/skel'),
             'postCreate':'/bin/echo'
         }
 

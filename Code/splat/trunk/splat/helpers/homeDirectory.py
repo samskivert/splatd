@@ -48,7 +48,7 @@ class WriterContext(object):
         self.mingid = None
         self.home = None
         self.splitHome = None
-        self.skelDirs = ('/usr/share/skel') # Default skeletal home directory
+        self.skelDirs = ('/usr/share/skel',) # Default skeletal home directory
         self.postCreate = None
 
 class Writer(plugin.Helper):
@@ -112,7 +112,11 @@ class Writer(plugin.Helper):
                 context.mingid = int(options[key])
                 continue
             if (key == 'skelDirs'):
-                context.skelDirs = os.path.abspath(options[key])
+                dirs = list(options[key])
+                absDirs = []
+                for x in dirs:
+                    absDirs.append(os.path.abspath(x))
+                context.skelDirs = tuple(absDirs)
                 continue
             if (key == 'postCreate'):
                 context.postCreate = os.path.abspath(options[key])

@@ -22,6 +22,9 @@ include		@LDAP_DIR@/schema/ooossh.schema
 # BDB database definitions
 #######################################################################
 
+modulepath  /usr/lib/ldap
+moduleload  back_bdb
+
 database	bdb
 suffix		"dc=example,dc=com"
 rootdn		"cn=Manager,dc=example,dc=com"
