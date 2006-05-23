@@ -48,7 +48,7 @@ class WriterContext(object):
         self.mingid = None
         self.home = None
         self.splitHome = None
-        self.skelDirs = ('/usr/share/skel',) # Default skeletal home directory
+        self.skelDir = '/usr/share/skel' # Default skeletal home directory
         self.postCreate = None
 
 class Writer(plugin.Helper):
@@ -58,7 +58,7 @@ class Writer(plugin.Helper):
     # Recursively copy a directory tree, preserving permission modes and access
     # times, but changing ownership of files to uid:gid. Also, renames
     # files/directories named dot.foo to .foo.
-    def __copySkelDir(srcDir, destDir, uid, gid):
+    def _copySkelDir(srcDir, destDir, uid, gid):
         import re, shutil
         # Regular expression matching files named dot.foo
         pattern = re.compile('^dot\.')
@@ -76,7 +76,7 @@ class Writer(plugin.Helper):
                     raise plugin.SplatPluginError, "Failed to create destination directory: %s" % destPath
                     continue
                 
-                __copySkelDir(srcPath, destPath, uid, gid)
+                self._copySkelDir(srcPath, destPath, uid, gid)
             
             # Copy regular files
             else:
@@ -111,12 +111,8 @@ class Writer(plugin.Helper):
             if (key == 'mingid'):
                 context.mingid = int(options[key])
                 continue
-            if (key == 'skelDirs'):
-                dirs = list(options[key])
-                absDirs = []
-                for x in dirs:
-                    absDirs.append(os.path.abspath(x))
-                context.skelDirs = tuple(absDirs)
+            if (key == 'skelDir'):
+                context.skelDir = os.path.abspath(options[key])
                 continue
             if (key == 'postCreate'):
                 context.postCreate = os.path.abspath(options[key])
@@ -156,9 +152,8 @@ class Writer(plugin.Helper):
                 raise plugin.SplatPluginError, "LDAP Server returned gid %d less than specified minimum gid of %d for entry '%s'" % (gid, context.mingid, ldapEntry.dn)
 
         # Validate skel directory
-        for dir in context.skelDirs:
-            if (not os.path.isdir(dir)):
-                raise plugin.SplatPluginError, "Skeletal home directory %s does not exist or is not a directory" % dir
+        if (not os.path.isdir(context.skelDir)):
+            raise plugin.SplatPluginError, "Skeletal home directory %s does not exist or is not a directory" % context.skelDir
 
         # Validate the post homedir creation script
         if (context.postCreate != None):
@@ -177,8 +172,7 @@ class Writer(plugin.Helper):
             return
 
         # Copy files from skeletal directories to user's home directory
-        for dir in context.skelDirs:
-            __copySkelDir(dir, home, uid, gid)
+        self._copySkelDir(context.skelDir, home, uid, gid)
 
         # Fork and run post create script if it was defined
         if (context.postCreate != None):

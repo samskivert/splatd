@@ -61,7 +61,7 @@ class HomeDirtestCase(unittest.TestCase):
             'home':'/home',
             'minuid':'0',
             'mingid':'0',
-            'skelDirs':('/usr/share/skel','/etc/skel'),
+            'skelDir':'/usr/share/skel',
             'postCreate':'/bin/echo'
         }
 
@@ -95,10 +95,10 @@ class HomeDirtestCase(unittest.TestCase):
         self.context = self.hc.helper.parseOptions(options)
         self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
         
-    def test_option_skelDirs(self):
+    def test_option_skelDir(self):
         """ Test Skeletal Directory Validation """
         options = { 
-            'skelDirs':'/asdf/jkl'
+            'skelDir':'/asdf/jkl'
         }
         self.context = self.hc.helper.parseOptions(options)
         self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
