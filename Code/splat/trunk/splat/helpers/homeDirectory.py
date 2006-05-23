@@ -1,6 +1,38 @@
 # homeDirectory.py vi:ts=4:sw=4:expandtab:
 #
-# XXX put copyright / license here
+# LDAP Home Directory Creating Helper.
+# Authors:
+#       Nick Barkas <snb@threerings.net>
+# Based on ssh key helper by:
+#       Will Barton <wbb4@opendarwin.org>
+#       Landon Fuller <landonf@threerings.net>
+#
+# Copyright (c) 2006 Three Rings Design, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. Neither the name of the copyright owner nor the names of contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 
 import os, logging
 
@@ -8,8 +40,6 @@ import splat
 from splat import plugin
 
 logger = logging.getLogger(splat.LOG_NAME)
-
-# XXX need post-create script.
 
 class WriterContext(object):
     """ Option Context """
@@ -19,6 +49,7 @@ class WriterContext(object):
         self.home = None
         self.splitHome = None
         self.skelDirs = ('/usr/share/skel') # Default skeletal home directory
+        self.postCreate = None
 
 class Writer(plugin.Helper):
     # Required Attributes
@@ -83,6 +114,9 @@ class Writer(plugin.Helper):
             if (key == 'skelDirs'):
                 context.skelDirs = int(options[key])
                 continue
+            if (key == 'postCreate'):
+                context.postCreate = int(options[key])
+                continue
             raise plugin.SplatPluginError, "Invalid option '%s' specified." % key
 
         return context
@@ -91,10 +125,8 @@ class Writer(plugin.Helper):
         attributes = ldapEntry.attributes
 
         # Test for required attributes
-        if (not attributes.has_key('homeDirectory')):
-            return
-        if (not attributes.has_key('uidNumber') or not attributes.has_key('gidNumber')):
-            return
+        if (not (attributes.has_key('homeDirectory') and attributes.has_key('uidNumber') and attributes.has_key('gidNumber'))):
+            raise plugin.SplatPluginError, "Required attributes homeDirectory, uidNumber, and gidNumber not all specified."
 
         home = attributes.get("homeDirectory")[0]
         uid = int(attributes.get("uidNumber")[0])
@@ -124,6 +156,11 @@ class Writer(plugin.Helper):
             if (not os.path.isdir(dir)):
                 raise plugin.SplatPluginError, "Skeletal home directory %s does not exist or is not a directory" % dir
 
+        # Validate the post homedir creation script
+        if (context.postCreate != None):
+            if (os.access(context.postCreate, os.X_OK) and not os.path.isdir(context.postCreate)):
+                raise plugin.SplatPluginError, "Post user creation script %s is not an executable file" % context.postCreate
+
         # Create the home directory, unless it already exists
         if (not os.path.isdir(home)):
             try:
@@ -138,3 +175,33 @@ class Writer(plugin.Helper):
         # Copy files from skeletal directories to user's home directory
         for dir in context.skelDirs:
             __copySkelDir(dir, home, uid, gid)
+
+        # Fork and run post create script if it was defined
+        if (context.postCreate != None):
+            pipe = os.pipe()
+            inf = os.fdopen(pipe[0], 'r')
+                                    
+            pid = os.fork()
+            if (pid == 0):
+                os.execl(content.postCreate, uid, gid, home)
+
+            else:
+                while (1):
+                    try:
+                        result = os.waitpid(pid, 0)
+                    except OSError, e:
+                        import errno
+                        if (e.errno == errno.EINTR):
+                            continue
+                        raise
+                    break
+                status = os.WEXITSTATUS(result[1])
+            
+            # Check if child process exited happily.
+            if (status == 0):
+                inf.close()
+                return
+            else:
+                errstr = inf.readline()
+                inf.close()
+                raise plugin.SplatPluginError, "Post creation script %s %d %d %s exited abnormally: %s" % (content.postCreate, uid, gid, home, errstr)
