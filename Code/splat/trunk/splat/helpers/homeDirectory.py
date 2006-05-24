@@ -107,6 +107,7 @@ class Writer(plugin.Helper):
             if (os.path.isdir(srcPath)):
                 try:
                     os.makedirs(destPath)
+                    shutil.copystat(srcPath, destPath)
                 except OSError, e:
                     raise plugin.SplatPluginError, "Failed to create destination directory: %s" % destPath
                     continue
@@ -186,7 +187,7 @@ class Writer(plugin.Helper):
                                     
             pid = os.fork()
             if (pid == 0):
-                os.execl(content.postcreate, uid, gid, home)
+                os.execl(context.postcreate, context.postcreate, str(uid), str(gid), home)
 
             else:
                 while (1):
@@ -207,4 +208,4 @@ class Writer(plugin.Helper):
             else:
                 errstr = inf.readline()
                 inf.close()
-                raise plugin.SplatPluginError, "Post creation script %s %d %d %s exited abnormally: %s" % (content.postcreate, uid, gid, home, errstr)
+                raise plugin.SplatPluginError, "Post creation script %s %d %d %s exited abnormally: %s" % (context.postcreate, uid, gid, home, errstr)
