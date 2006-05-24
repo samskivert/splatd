@@ -56,7 +56,11 @@ class HomeDirtestCase(unittest.TestCase):
             'home':'/home',
             'minuid':'0',
             'mingid':'0',
-            'skelDir':'/etc/skel'
+            # This works on Ubuntu, but not FreeBSD or Mac OS X. They have
+            # /usr/share/skel. For testing on those platforms, you can just
+            # comment this out, and the default value of /usr/share/skel will be
+            # used.
+            'skeldir':'/etc/skel'
         }
         
     """ Test Splat Home Directory Helper """
@@ -86,18 +90,18 @@ class HomeDirtestCase(unittest.TestCase):
         options['home'] = 'home'
         self.assertRaises(splat.SplatError, self.hc.helper.parseOptions, options)
 
-    def test_option_parse_skelDir(self):
+    def test_option_parse_skeldir(self):
         """ Test Skel Directory Option Parser """
         # Paths that don't exist should generate an exception
         options = self._getDefaultOptions()
-        options['skelDir'] = '/asdf/jklh/qwer'
+        options['skeldir'] = '/asdf/jklh/qwer'
         self.assertRaises(splat.SplatError, self.hc.helper.parseOptions, options)
 
-    def test_option_parse_postCreate(self):
+    def test_option_parse_postcreate(self):
         """ Test Post Create Script Option Parser """
         # Scripts that don't exist should generate an exception
         options = self._getDefaultOptions()
-        options['postCreate'] = '/asdf/ghjk/lp'
+        options['postcreate'] = '/asdf/ghjk/lp'
         self.assertRaises(splat.SplatError, self.hc.helper.parseOptions, options)
 
     def test_validation_home(self):

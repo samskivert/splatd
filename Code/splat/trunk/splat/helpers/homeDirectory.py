@@ -48,8 +48,8 @@ class WriterContext(object):
         self.mingid = None
         self.home = None
         self.splitHome = None
-        self.skelDir = '/usr/share/skel' # Default skeletal home directory
-        self.postCreate = None
+        self.skeldir = '/usr/share/skel' # Default skeletal home directory
+        self.postcreate = None
 
 class Writer(plugin.Helper):
     # Required Attributes
@@ -76,18 +76,18 @@ class Writer(plugin.Helper):
             if (key == 'mingid'):
                 context.mingid = int(options[key])
                 continue
-            if (key == 'skelDir'):
-                context.skelDir = os.path.abspath(options[key])
+            if (key == 'skeldir'):
+                context.skeldir = os.path.abspath(options[key])
                 # Validate skel directory
-                if (not os.path.isdir(context.skelDir)):
-                    raise plugin.SplatPluginError, "Skeletal home directory %s does not exist or is not a directory" % context.skelDir
+                if (not os.path.isdir(context.skeldir)):
+                    raise plugin.SplatPluginError, "Skeletal home directory %s does not exist or is not a directory" % context.skeldir
                 continue
-            if (key == 'postCreate'):
-                context.postCreate = os.path.abspath(options[key])
+            if (key == 'postcreate'):
+                context.postcreate = os.path.abspath(options[key])
                 # Validate the post homedir creation script
-                if (context.postCreate != None):
-                    if (not os.access(context.postCreate, os.X_OK) or os.path.isdir(context.postCreate)):
-                        raise plugin.SplatPluginError, "Post user creation script %s is not an executable file" % context.postCreate
+                if (context.postcreate != None):
+                    if (not os.access(context.postcreate, os.X_OK) or os.path.isdir(context.postcreate)):
+                        raise plugin.SplatPluginError, "Post user creation script %s is not an executable file" % context.postcreate
                 continue
             raise plugin.SplatPluginError, "Invalid option '%s' specified." % key
         
@@ -177,16 +177,16 @@ class Writer(plugin.Helper):
             return
 
         # Copy files from skeletal directories to user's home directory
-        self._copySkelDir(context.skelDir, home, uid, gid)
+        self._copySkelDir(context.skeldir, home, uid, gid)
 
         # Fork and run post create script if it was defined
-        if (context.postCreate != None):
+        if (context.postcreate != None):
             pipe = os.pipe()
             inf = os.fdopen(pipe[0], 'r')
                                     
             pid = os.fork()
             if (pid == 0):
-                os.execl(content.postCreate, uid, gid, home)
+                os.execl(content.postcreate, uid, gid, home)
 
             else:
                 while (1):
@@ -207,4 +207,4 @@ class Writer(plugin.Helper):
             else:
                 errstr = inf.readline()
                 inf.close()
-                raise plugin.SplatPluginError, "Post creation script %s %d %d %s exited abnormally: %s" % (content.postCreate, uid, gid, home, errstr)
+                raise plugin.SplatPluginError, "Post creation script %s %d %d %s exited abnormally: %s" % (content.postcreate, uid, gid, home, errstr)
