@@ -50,63 +50,82 @@ from splat.test import DATA_DIR
 
 # Test Cases
 class HomeDirtestCase(unittest.TestCase):
+    def _getDefaultOptions(self):
+        # Benign options
+        return { 
+            'home':'/home',
+            'minuid':'0',
+            'mingid':'0',
+            'skelDir':'/etc/skel'
+        }
+        
     """ Test Splat Home Directory Helper """
 
     def setUp(self):
         self.slapd = slapd.LDAPServer()
         self.conn = ldaputils.Connection(slapd.SLAPD_URI)
-
-        # Benign options
-        options = { 
-            'home':'/home',
-            'minuid':'0',
-            'mingid':'0',
-            'skelDir':'/usr/share/skel',
-            'postCreate':'/bin/echo'
-        }
-
-        self.hc = plugin.HelperController('test', 'splat.helpers.homeDirectory', 5, 'dc=example,dc=com', '(uid=john)', False, options)
+        self.hc = plugin.HelperController('test', 'splat.helpers.homeDirectory', 5, 'dc=example,dc=com', '(uid=john)', False, self._getDefaultOptions())
         self.entries = self.conn.search(self.hc.searchBase, ldap.SCOPE_SUBTREE, self.hc.searchFilter, self.hc.searchAttr)
 
     def tearDown(self):
         self.slapd.stop()
 
-    def test_option_home(self):
-        """ Test Home Directory Validation """
-        options = { 
-            'home':'/fred',
-        }
-        self.context = self.hc.helper.parseOptions(options)
-        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
+    def test_option_parser(self):
+        """ Test Options Parser """
+        # foo is not a valid option
+        options = self._getDefaultOptions()
+        options['foo'] = 'bar' 
+        self.assertRaises(splat.SplatError, self.hc.helper.parseOptions, options)
+        # Make sure the parser works when all options are valid
+        assert self.hc.helper.parseOptions(self._getDefaultOptions())
 
-    def test_option_minuid(self):
+    def test_option_parse_home(self):
+        """ Test Home Option Parser """
+        # Relative paths shouldn't be allowed for home
+        options = self._getDefaultOptions()
+        options['home'] = 'home'
+        self.assertRaises(splat.SplatError, self.hc.helper.parseOptions, options)
+
+    def test_option_parse_skelDir(self):
+        """ Test Skel Directory Option Parser """
+        # Paths that don't exist should generate an exception
+        options = self._getDefaultOptions()
+        options['skelDir'] = '/asdf/jklh/qwer'
+        self.assertRaises(splat.SplatError, self.hc.helper.parseOptions, options)
+
+    def test_option_parse_postCreate(self):
+        """ Test Post Create Script Option Parser """
+        # Scripts that don't exist should generate an exception
+        options = self._getDefaultOptions()
+        options['postCreate'] = '/asdf/ghjk/lp'
+        self.assertRaises(splat.SplatError, self.hc.helper.parseOptions, options)
+
+    def test_validation_home(self):
+        """ Test Home Validation """
+        options = self._getDefaultOptions()
+        options['home'] = '/etc'
+        self.context = self.hc.helper.parseOptions(options)
+        self.assertRaises(splat.SplatError, self.hc.helper._getAttributes, self.context, self.entries[0])
+
+    def test_validation_uid(self):
         """ Test UID Validation """
-        options = { 
-            'minuid':'9000000'
-        }
+        options = self._getDefaultOptions()
+        options['minuid'] = '9000000'
         self.context = self.hc.helper.parseOptions(options)
-        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
+        self.assertRaises(splat.SplatError, self.hc.helper._getAttributes, self.context, self.entries[0])
 
-    def test_option_mingid(self):
+    def test_validation_home(self):
         """ Test GID Validation """
-        options = { 
-            'mingid':'9000000'
-        }
+        options = self._getDefaultOptions()
+        options['mingid'] = '9000000'
         self.context = self.hc.helper.parseOptions(options)
-        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
-        
-    def test_option_skelDir(self):
-        """ Test Skeletal Directory Validation """
-        options = { 
-            'skelDir':'/asdf/jkl'
-        }
-        self.context = self.hc.helper.parseOptions(options)
-        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
+        self.assertRaises(splat.SplatError, self.hc.helper._getAttributes, self.context, self.entries[0])
 
-    def test_option_postCreate(self):
-        """ Test Post Create Script Validation """
-        options = { 
-            'postCreate':'/asdf/jkl'
-        }
+    def test_attributes(self):
+        """ Test Attributes """
+        options = self._getDefaultOptions()
         self.context = self.hc.helper.parseOptions(options)
-        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
+        realAttrs = ('/home/john', 10001, 10001)
+        attrs = self.hc.helper._getAttributes(self.context, self.entries[0])
+        self.failUnlessEqual(realAttrs, attrs)
+
