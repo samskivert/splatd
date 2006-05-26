@@ -78,10 +78,7 @@ class HelperController(object):
         if (self.helper == None):
             raise SplatPluginError, "Helper module %s not found" % module
 
-        if (not hasattr(self.helper, "attributes")):
-            raise SplatPluginError, "Helper missing required 'attributes' attribute."
-
-        self.searchAttr = self.helper.attributes
+        self.searchAttr = self.helper.attributes()
 
         self.defaultContext = self.helper.parseOptions(helperOptions)
 
@@ -134,6 +131,13 @@ class Helper(object):
     """
     Abstract class for Splat helper plugins
     """
+    def attributes(self):
+        """
+        Return required LDAP attributes.
+        """
+        raise NotImplementedError, \
+                "This method is not implemented in this abstract class"
+        
     def parseOptions(self, options):
         """
         Parse the supplied options dict and return

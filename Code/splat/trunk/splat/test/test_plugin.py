@@ -49,6 +49,9 @@ class MockHelper(plugin.Helper):
     def __init__(self):
         self.success = False
 
+    def attributes(self):
+        return ('dn',)
+
     def parseOptions(self, options):
         assert(options['test'] == 'value')
         return options
@@ -64,8 +67,6 @@ class MockHelper(plugin.Helper):
 
     def convert(self):
         pass
-
-MockHelper.attributes = ('dn',)
 
 # Test Cases
 class HelperWithControllerTestCase(unittest.TestCase):

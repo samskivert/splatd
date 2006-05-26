@@ -58,7 +58,8 @@ class WriterContext(object):
 
 class Writer(plugin.Helper):
     # Required Attributes
-    attributes = ('mailForwardingAddress', 'homeDirectory', 'gidNumber', 'uidNumber')
+    def attributes(self): 
+        return ('mailForwardingAddress', 'homeDirectory', 'gidNumber', 'uidNumber')
 
     def parseOptions(self, options):
         context = WriterContext()

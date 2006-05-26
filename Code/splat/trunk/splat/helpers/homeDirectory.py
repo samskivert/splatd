@@ -53,7 +53,8 @@ class WriterContext(object):
 
 class Writer(plugin.Helper):
     # Required Attributes
-    attributes = ('homeDirectory', 'gidNumber', 'uidNumber')
+    def attributes(self): 
+        return ('homeDirectory', 'gidNumber', 'uidNumber')
 
     # Recursively copy a directory tree, preserving permission modes and access
     # times, but changing ownership of files to uid:gid. Also, renames

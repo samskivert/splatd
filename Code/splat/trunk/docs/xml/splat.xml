@@ -563,7 +563,7 @@ objectclass ( oooSSHClasses:1 NAME 'sshAccount'
             <para>
                 Splat Helper Modules are implemented as a Python module containing
                 a single subclass of <computeroutput>splat.plugin.Helper</computeroutput>. The subclass
-                must implement two methods: <methodname>parseOptions</methodname> and <methodname>work</methodname>.
+                must implement three methods: <methodname>attributes</methodname>, <methodname>parseOptions</methodname>, and <methodname>work</methodname>.
             </para>
 
             <para>
@@ -577,7 +577,9 @@ objectclass ( oooSSHClasses:1 NAME 'sshAccount'
             <para>
                 The <methodname>parseOptions</methodname> method is expected to return an opaque context for a given
                 set of options. Later invocations of the <methodname>work</methodname> method will be passed a reference
-                to this opaque context and an LDAP <classname>Entry</classname> instance.
+                to this opaque context and an LDAP <classname>Entry</classname> instance. The
+                <methodname>attributes</methodname> method should just return a tuple of the LDAP attributes needed by
+                a plugin.
             </para>
         </sect1>
 
@@ -587,9 +589,9 @@ objectclass ( oooSSHClasses:1 NAME 'sshAccount'
             <para>
                 Splat Helper Modules are implemented as a Python module containing
                 a single subclass of <computeroutput>splat.plugin.Helper</computeroutput>.
-                The subclass must implement two methods:
-                <methodname>parseOptions</methodname> and <methodname>work</methodname>, and
-                provide a single class attribute: <varname>attributes</varname>.
+                The subclass must implement three methods:
+                <methodname>parseOptions</methodname>, <methodname>work</methodname>, and
+                <methodname>attributes</methodname>.
             </para>
 
             <para>
@@ -599,7 +601,8 @@ objectclass ( oooSSHClasses:1 NAME 'sshAccount'
 
             <programlisting>
 <![CDATA[class MyHelper(splat.plugin.Helper):
-    attributes = ('uid', 'sshPublicKey')
+    def attributes(self):
+        ...
     def parseOptions(self, options):
         ...
     def work(self, context, ldapEntry):
@@ -664,7 +667,7 @@ objectclass ( oooSSHClasses:1 NAME 'sshAccount'
                 </para>
                 <caution>
                     <para>
-                        The <varname>attributes</varname> class variable defines
+                        The helper's <methodname>attributes</methodname> method defines
                         the LDAP object attributes that you are interested in -- an
                         LDAP Entry will still be returned if it does not contain
                         all of your requested attributes. It is your responsibility
@@ -675,7 +678,8 @@ objectclass ( oooSSHClasses:1 NAME 'sshAccount'
                     <title>Example Implementation</title>
                     <programlisting>
 <![CDATA[class MyHelper(splat.plugin.Helper):
-    attributes = ('uid', 'sshPublicKey')
+    def attributes(self):
+        return ('uid', 'sshPublicKey')
     def work(self, context, ldapEntry):
         if (not ldapEntry.attributes.has_key('sshPublicKey'))
             return
