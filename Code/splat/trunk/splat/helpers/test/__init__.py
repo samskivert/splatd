@@ -34,7 +34,7 @@
 
 import os
 
-__all__ = ['test_sshPublicKeys', 'test_homeDirectory']
+__all__ = ['test_sshPublicKeys', 'test_homeDirectory', 'test_mailForwardingAddress']
 
 # Useful Constants
 INSTALL_DIR = os.path.dirname(__file__)

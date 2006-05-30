@@ -47,8 +47,8 @@ from splat.test import slapd
 from splat.test import DATA_DIR
 
 # Test Cases
-class SSHPublicKeystestCase(unittest.TestCase):
-    """ Test Splat SSH Helper """
+class MailForwardingAddresstestCase(unittest.TestCase):
+    """ Test Splat Mail Forwarding Helper """
 
     def setUp(self):
         self.slapd = slapd.LDAPServer()
@@ -58,11 +58,10 @@ class SSHPublicKeystestCase(unittest.TestCase):
         options = { 
             'home':'/home',
             'minuid':'0',
-            'mingid':'0',
-            'command':'/bin/sh'
+            'mingid':'0'
         }
 
-        self.hc = plugin.HelperController('test', 'splat.helpers.sshPublicKeys', 5, 'dc=example,dc=com', '(uid=john)', False, options)
+        self.hc = plugin.HelperController('test', 'splat.helpers.mailForwardingAddress', 5, 'dc=example,dc=com', '(uid=john)', False, options)
         self.entries = self.conn.search(self.hc.searchBase, ldap.SCOPE_SUBTREE, self.hc.searchFilter, self.hc.searchAttr)
 
     def tearDown(self):
@@ -74,7 +73,6 @@ class SSHPublicKeystestCase(unittest.TestCase):
             'home':'/home',
             'minuid':'0',
             'mingid':'0',
-            'command':'/bin/sh',
             'foo':'bar'
         }
         self.assertRaises(splat.SplatError, self.hc.helper.parseOptions, options)
