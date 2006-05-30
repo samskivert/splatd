@@ -40,6 +40,7 @@
 from twisted.trial import unittest
 
 import ldap
+import os
 
 import splat
 from splat import ldaputils, plugin
@@ -51,16 +52,21 @@ from splat.test import DATA_DIR
 # Test Cases
 class HomeDirtestCase(unittest.TestCase):
     def _getDefaultOptions(self):
-        # Benign options
+        # Ubuntu (and probably Debian and other linuxes) use /etc/skel instead
+        # of /usr/share skel.
+        defSkel = '/usr/share/skel'
+        if (not os.path.isdir(defSkel)):
+            if (os.path.isdir('/etc/skel')):
+                defSkel = '/etc/skel'
+            else:
+                self.fail('Can not find a useable default skeletal directory')
+            
         return { 
+
             'home':'/home',
             'minuid':'0',
             'mingid':'0',
-            # This works on Ubuntu, but not FreeBSD or Mac OS X. They have
-            # /usr/share/skel. For testing on those platforms, you can just
-            # comment this out, and the default value of /usr/share/skel will be
-            # used.
-            'skeldir':'/etc/skel'
+            'skeldir':defSkel
         }
         
     """ Test Splat Home Directory Helper """
@@ -95,13 +101,6 @@ class HomeDirtestCase(unittest.TestCase):
         # Paths that don't exist should generate an exception
         options = self._getDefaultOptions()
         options['skeldir'] = '/asdf/jklh/qwer'
-        self.assertRaises(splat.SplatError, self.hc.helper.parseOptions, options)
-
-    def test_option_parse_postcreate(self):
-        """ Test Post Create Script Option Parser """
-        # Scripts that don't exist should generate an exception
-        options = self._getDefaultOptions()
-        options['postcreate'] = '/asdf/ghjk/lp'
         self.assertRaises(splat.SplatError, self.hc.helper.parseOptions, options)
 
     def test_validation_home(self):

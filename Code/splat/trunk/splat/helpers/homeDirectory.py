@@ -85,10 +85,6 @@ class Writer(plugin.Helper):
                 continue
             if (key == 'postcreate'):
                 context.postcreate = os.path.abspath(options[key])
-                # Validate the post homedir creation script
-                if (context.postcreate != None):
-                    if (not os.access(context.postcreate, os.X_OK) or os.path.isdir(context.postcreate)):
-                        raise plugin.SplatPluginError, "Post user creation script %s is not an executable file" % context.postcreate
                 continue
             raise plugin.SplatPluginError, "Invalid option '%s' specified." % key
         
@@ -188,7 +184,11 @@ class Writer(plugin.Helper):
                                     
             pid = os.fork()
             if (pid == 0):
-                os.execl(context.postcreate, context.postcreate, str(uid), str(gid), home)
+                try:
+                    os.execl(context.postcreate, context.postcreate, str(uid), str(gid), home)
+                except OSError, e:
+                    import errno
+                    raise plugin.SplatPluginError, "Failed to execute post-creation script %s with error code %d (%s): %s." % (context.postcreate, e.errno, errno.errorcode(e.errno), e.strerror)
 
             else:
                 while (1):
