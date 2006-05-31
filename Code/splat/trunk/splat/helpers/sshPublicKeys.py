@@ -77,6 +77,7 @@ class Writer(homeDirectory.Writer):
         if (not os.path.isdir(home)):
             homeDirectory.Writer.work(self, context, ldapEntry)
 
+        sshdir = "%s/.ssh" % home
         tmpfilename = "%s/.ssh/authorized_keys.tmp" % home
         filename = "%s/.ssh/authorized_keys" % home
         logger.info("Writing key to %s" % filename)
@@ -100,6 +101,15 @@ class Writer(homeDirectory.Writer):
 
             # Adopt a strict umask
             os.umask(077)
+
+            # Create .ssh directory if it does not already exist
+            if (not os.path.isdir(sshdir)):
+                try:
+                    os.mkdir(sshdir)
+                except OSError, e:
+                    outf.write(str(e) + '\n')
+                    outf.close()
+                    os._exit(SSH_ERR_WRITE)
 
             try:
                 f = open(tmpfilename, "w+")

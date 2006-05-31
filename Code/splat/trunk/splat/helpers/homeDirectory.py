@@ -187,8 +187,7 @@ class Writer(plugin.Helper):
                 try:
                     os.execl(context.postcreate, context.postcreate, str(uid), str(gid), home)
                 except OSError, e:
-                    import errno
-                    raise plugin.SplatPluginError, "Failed to execute post-creation script %s with error code %d (%s): %s." % (context.postcreate, e.errno, errno.errorcode(e.errno), e.strerror)
+                    raise plugin.SplatPluginError, "Failed to execute post-creation script %s [Errno %d] %s." % (context.postcreate, e.errno, e.strerror)
 
             else:
                 while (1):
