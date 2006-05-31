@@ -5,7 +5,7 @@
 #       Will Barton <wbb4@opendarwin.org>
 #       Landon Fuller <landonf@threerings.net>
 #
-# Copyright (c) 2005 Three Rings Design, Inc.
+# Copyright (c) 2005, 2006 Three Rings Design, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,98 +37,49 @@ import sys, os, logging
 import splat
 from splat import plugin
 
+import homeDirectory
+
 logger = logging.getLogger(splat.LOG_NAME)
 
 # Sub-process result codes
 SSH_ERR_NONE = 0
 SSH_ERR_MISC = 1
 SSH_ERR_PRIVSEP = 2
-SSH_ERR_MKDIR = 3
-SSH_ERR_WRITE = 4
+SSH_ERR_WRITE = 3
 
-class WriterContext(object):
-    """ Option Context """
-    def __init__(self):
-        self.minuid = None
-        self.mingid = None
-        self.home = None
-        self.splitHome = None
-        self.command = None
-
-class Writer(plugin.Helper):
+class Writer(homeDirectory.Writer):
     # Required Attributes
     def attributes(self): 
-        return ('sshPublicKey', 'homeDirectory', 'gidNumber', 'uidNumber')
+        return ('sshPublicKey',) + homeDirectory.Writer.attributes(self) 
 
     def parseOptions(self, options):
-        context = WriterContext()
-
+        # Get command option, if it was given
+        command = None
         for key in options.keys():
-            if (key == 'home'):
-                context.home = os.path.abspath(options[key])
-                splitHome = context.home.split('/')
-                if (splitHome[0] != ''):
-                    raise plugin.SplatPluginError, "Relative paths for the home option are not permitted"
-                context.splitHome = splitHome
-                continue
-            if (key == 'minuid'):
-                context.minuid = int(options[key])
-                continue
-            if (key == 'mingid'):
-                context.mingid = int(options[key])
-                continue
             if (key == 'command'):
-                context.command = options[key]
-                continue
-            raise plugin.SplatPluginError, "Invalid option '%s' specified." % key
-
+                command = options[key]
+                del options[key]
+        
+        # Then get other options using superclass parseOptions method
+        context = homeDirectory.Writer.parseOptions(self, options)
+        context.command = command
         return context
 
     def work(self, context, ldapEntry):
+        # Get all needed LDAP attributes, and verify we have what we need
         attributes = ldapEntry.attributes
-
-        # Test for required attributes
-        if (not attributes.has_key('sshPublicKey') or not attributes.has_key('homeDirectory')):
-            return
-        if (not attributes.has_key('uidNumber') or not attributes.has_key('gidNumber')):
-            return
-
-        home = attributes.get("homeDirectory")[0]
-        uid = int(attributes.get("uidNumber")[0])
-        gid = int(attributes.get("gidNumber")[0])
+        if (not attributes.has_key('sshPublicKey')):
+            raise plugin.SplatPluginError, "Required attribute sshPublicKey not specified."
         keys = attributes.get("sshPublicKey")
+        (home, uid, gid) = self.getAttributes(context, ldapEntry)
 
-        # Validate the home directory
-        if (context.home != None):
-            givenPath = os.path.abspath(home).split('/')
-            if (len(givenPath) < len(context.splitHome)):
-                raise plugin.SplatPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, context.home, ldapEntry.dn)
-
-            for i in range(0, len(context.splitHome)):
-                if (context.splitHome[i] != givenPath[i]):
-                    raise plugin.SplatPluginError, "LDAP Server returned home directory (%s) located outside of %s for entry '%s'" % (home, context.home, ldapEntry.dn)
-
-        # Validate the UID
-        if (context.minuid != None):
-            if (context.minuid > uid):
-                raise plugin.SplatPluginError, "LDAP Server returned uid %d less than specified minimum uid of %d for entry '%s'" % (uid, context.minuid, ldapEntry.dn)
-        # Validate the GID
-        if (context.mingid != None):
-            if (context.mingid > gid):
-                raise plugin.SplatPluginError, "LDAP Server returned gid %d less than specified minimum gid of %d for entry '%s'" % (gid, context.mingid, ldapEntry.dn)
-
+        # Make sure the home directory exists, and create it if it doesn't
+        if (not os.path.isdir(home)):
+            homeDirectory.Writer.work(self, context, ldapEntry)
 
         tmpfilename = "%s/.ssh/authorized_keys.tmp" % home
         filename = "%s/.ssh/authorized_keys" % home
         logger.info("Writing key to %s" % filename)
-
-        # Make sure the home directory exists
-        if (not os.path.isdir(home)):
-            try:
-                os.makedirs(home)
-                os.chown(home, uid, gid)
-            except OSError, e:
-                raise plugin.SplatPluginError, "Failed to create home directory, %s" % e
 
         # Fork and setuid to write the files
         pipe = os.pipe()
@@ -151,15 +102,6 @@ class Writer(plugin.Helper):
             os.umask(077)
 
             try:
-                # Make sure the directory exists
-                dir = os.path.split(tmpfilename)[0]
-                if not os.path.exists(dir): os.makedirs(dir)
-            except OSError, e:
-                outf.write(str(e) + '\n')
-                outf.close()
-                os._exit(SSH_ERR_MKDIR)
-
-            try:
                 f = open(tmpfilename, "w+")
                 for key in keys:
                     if (context.command == None):
@@ -174,7 +116,7 @@ class Writer(plugin.Helper):
                 outf.close()
                 os._exit(SSH_ERR_WRITE)
 
-            # Move key to ~/authorized_keys
+            # Move key to ~/.ssh/authorized_keys
             try:
                 os.rename(tmpfilename, filename)
             except OSError, e:
@@ -208,9 +150,6 @@ class Writer(plugin.Helper):
 
         if (status == SSH_ERR_PRIVSEP):
             raise plugin.SplatPluginError, "Failed to drop privileges, %s" % errstr
-
-        if (status == SSH_ERR_MKDIR):
-            raise plugin.SplatPluginError, "Failed to create SSH directory '%s', %s" % errstr
 
         if (status == SSH_ERR_WRITE):
             raise plugin.SplatPluginError, "Failed to write SSH key, %s" % errstr

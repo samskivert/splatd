@@ -127,7 +127,7 @@ class Writer(plugin.Helper):
                 continue
             
 
-    def _getAttributes(self, context, ldapEntry):
+    def getAttributes(self, context, ldapEntry):
         attributes = ldapEntry.attributes
 
         # Test for required attributes
@@ -161,7 +161,7 @@ class Writer(plugin.Helper):
         return (home, uid, gid)
 
     def work(self, context, ldapEntry):
-        (home, uid, gid) = self._getAttributes(context, ldapEntry)
+        (home, uid, gid) = self.getAttributes(context, ldapEntry)
 
         # Create the home directory, unless it already exists
         if (not os.path.isdir(home)):

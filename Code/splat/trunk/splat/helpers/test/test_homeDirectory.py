@@ -108,27 +108,27 @@ class HomeDirtestCase(unittest.TestCase):
         options = self._getDefaultOptions()
         options['home'] = '/etc'
         self.context = self.hc.helper.parseOptions(options)
-        self.assertRaises(splat.SplatError, self.hc.helper._getAttributes, self.context, self.entries[0])
+        self.assertRaises(splat.SplatError, self.hc.helper.getAttributes, self.context, self.entries[0])
 
     def test_validation_uid(self):
         """ Test UID Validation """
         options = self._getDefaultOptions()
         options['minuid'] = '9000000'
         self.context = self.hc.helper.parseOptions(options)
-        self.assertRaises(splat.SplatError, self.hc.helper._getAttributes, self.context, self.entries[0])
+        self.assertRaises(splat.SplatError, self.hc.helper.getAttributes, self.context, self.entries[0])
 
     def test_validation_home(self):
         """ Test GID Validation """
         options = self._getDefaultOptions()
         options['mingid'] = '9000000'
         self.context = self.hc.helper.parseOptions(options)
-        self.assertRaises(splat.SplatError, self.hc.helper._getAttributes, self.context, self.entries[0])
+        self.assertRaises(splat.SplatError, self.hc.helper.getAttributes, self.context, self.entries[0])
 
     def test_attributes(self):
         """ Test Attributes """
         options = self._getDefaultOptions()
         self.context = self.hc.helper.parseOptions(options)
         realAttrs = ('/home/john', 10001, 10001)
-        attrs = self.hc.helper._getAttributes(self.context, self.entries[0])
+        attrs = self.hc.helper.getAttributes(self.context, self.entries[0])
         self.failUnlessEqual(realAttrs, attrs)
 
