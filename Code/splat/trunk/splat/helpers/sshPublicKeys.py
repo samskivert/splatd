@@ -53,16 +53,30 @@ class Writer(homeDirectory.Writer):
         return ('sshPublicKey',) + homeDirectory.Writer.attributes(self) 
 
     def parseOptions(self, options):
-        # Get command option, if it was given
+        # Make our own copy of options dictionary, so we don't clobber the
+        # caller's
+        import copy
+        myopt = copy.copy(options)
+
+        # Get command and makehome options, if they were given
         command = None
-        for key in options.keys():
+        makehome = False
+        
+        for key in myopt.keys():
             if (key == 'command'):
-                command = options[key]
-                del options[key]
+                command = myopt[key]
+                # Superclass parseOptions() method won't like this option
+                del myopt[key]
+                continue
+            if (key == 'makehome'):
+                makehome = bool(int(myopt[key]))
+                del myopt[key]
+                continue
         
         # Then get other options using superclass parseOptions method
-        context = homeDirectory.Writer.parseOptions(self, options)
+        context = homeDirectory.Writer.parseOptions(self, myopt)
         context.command = command
+        context.makehome = makehome
         return context
 
     def work(self, context, ldapEntry):
@@ -73,9 +87,15 @@ class Writer(homeDirectory.Writer):
         keys = attributes.get("sshPublicKey")
         (home, uid, gid) = self.getAttributes(context, ldapEntry)
 
-        # Make sure the home directory exists, and create it if it doesn't
+        # Make sure the home directory exists, and make it if config says to
         if (not os.path.isdir(home)):
-            homeDirectory.Writer.work(self, context, ldapEntry)
+            if (context.makehome == True):
+                homeDirectory.Writer.work(self, context, ldapEntry)
+            else:
+                # If we weren't told to make homedir, log a warning and quit
+                logger.warning("SSH keys not being written because home directory %s does not exist. To have this home directory created automatically by this plugin, set the makehome option to 1 in your splat configuration file, or use the homeDirectory plugin." % home)
+                return
+
 
         sshdir = "%s/.ssh" % home
         tmpfilename = "%s/.ssh/authorized_keys.tmp" % home

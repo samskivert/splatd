@@ -54,7 +54,25 @@ class Writer(homeDirectory.Writer):
         return ('mailForwardingAddress',) + homeDirectory.Writer.attributes(self)
     
     def parseOptions(self, options):
-        return homeDirectory.Writer.parseOptions(self, options)
+        # Make our own copy of options dictionary, so we don't clobber the
+        # caller's
+        import copy
+        myopt = copy.copy(options)
+
+        # Get makehome option, if was given
+        makehome = False
+
+        for key in myopt.keys():
+            if (key == 'makehome'):
+                makehome = bool(int(myopt[key]))
+                # Superclass parseOptions() method won't like this option
+                del myopt[key]
+                continue
+
+        # Then get other options using superclass parseOptions method
+        context = homeDirectory.Writer.parseOptions(self, myopt)
+        context.makehome = makehome
+        return context
     
     def work(self, context, ldapEntry):
         # Get LDAP attributes, and make sure we have all the ones we need
@@ -64,9 +82,14 @@ class Writer(homeDirectory.Writer):
         addresses = attributes.get("mailForwardingAddress")
         (home, uid, gid) = self.getAttributes(context, ldapEntry)
 
-        # Make sure the home directory exists, and create it if it doesn't
+        # Make sure the home directory exists, and make it if config says to
         if (not os.path.isdir(home)):
-            homeDirectory.Writer.work(self, context, ldapEntry)
+            if (context.makehome == True):
+                homeDirectory.Writer.work(self, context, ldapEntry)
+            else:
+                # If we weren't told to make homedir, log a warning and quit
+                logger.warning(".forward file not being written because home directory %s does not exist. To have this home directory created automatically by this plugin, set the makehome option to 1 in your splat configuration file, or use the homeDirectory plugin." % home)
+                return
 
         tmpfilename = "%s/.forward.tmp" % home
         filename = "%s/.forward" % home
