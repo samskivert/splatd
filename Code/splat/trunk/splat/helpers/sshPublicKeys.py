@@ -32,7 +32,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import sys, os, logging
+import sys, os, logging, errno, string
 
 import splat
 from splat import plugin
@@ -46,6 +46,12 @@ SSH_ERR_NONE = 0
 SSH_ERR_MISC = 1
 SSH_ERR_PRIVSEP = 2
 SSH_ERR_WRITE = 3
+class WriterContext(object):
+    """ Option Context """
+    def __init__(self):
+        self.command = None
+        self.makehome = False
+        self.homeDirContext = homeDirectory.WriterContext()
 
 class Writer(homeDirectory.Writer):
     # Required Attributes
@@ -53,30 +59,27 @@ class Writer(homeDirectory.Writer):
         return ('sshPublicKey',) + homeDirectory.Writer.attributes(self) 
 
     def parseOptions(self, options):
+        context = WriterContext()
+        
         # Make our own copy of options dictionary, so we don't clobber the
         # caller's
-        import copy
-        myopt = copy.copy(options)
+        myopt = options.copy()
 
         # Get command and makehome options, if they were given
-        command = None
-        makehome = False
-        
         for key in myopt.keys():
             if (key == 'command'):
-                command = myopt[key]
+                context.command = myopt[key]
                 # Superclass parseOptions() method won't like this option
                 del myopt[key]
                 continue
             if (key == 'makehome'):
-                makehome = bool(int(myopt[key]))
+                if (string.lower(myopt[key]) == 'true'):
+                    context.makehome = True
                 del myopt[key]
                 continue
         
         # Then get other options using superclass parseOptions method
-        context = homeDirectory.Writer.parseOptions(self, myopt)
-        context.command = command
-        context.makehome = makehome
+        context.homeDirContext = homeDirectory.Writer.parseOptions(self, myopt)
         return context
 
     def work(self, context, ldapEntry):
@@ -85,15 +88,15 @@ class Writer(homeDirectory.Writer):
         if (not attributes.has_key('sshPublicKey')):
             raise plugin.SplatPluginError, "Required attribute sshPublicKey not specified."
         keys = attributes.get("sshPublicKey")
-        (home, uid, gid) = self.getAttributes(context, ldapEntry)
+        (home, uid, gid) = self.getAttributes(context.homeDirContext, ldapEntry)
 
         # Make sure the home directory exists, and make it if config says to
         if (not os.path.isdir(home)):
             if (context.makehome == True):
-                homeDirectory.Writer.work(self, context, ldapEntry)
+                homeDirectory.Writer.work(self, context.homeDirContext, ldapEntry)
             else:
                 # If we weren't told to make homedir, log a warning and quit
-                logger.warning("SSH keys not being written because home directory %s does not exist. To have this home directory created automatically by this plugin, set the makehome option to 1 in your splat configuration file, or use the homeDirectory plugin." % home)
+                logger.warning("SSH keys not being written because home directory %s does not exist. To have this home directory created automatically by this plugin, set the makehome option to true in your splat configuration file, or use the homeDirectory plugin." % home)
                 return
 
 
@@ -160,7 +163,6 @@ class Writer(homeDirectory.Writer):
                 try:
                     result = os.waitpid(pid, 0)
                 except OSError, e:
-                    import errno
                     if (e.errno == errno.EINTR):
                         continue
                     raise

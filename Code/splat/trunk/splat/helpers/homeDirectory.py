@@ -34,7 +34,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os, logging
+import os, logging, re, shutil, errno
 
 import splat
 from splat import plugin
@@ -55,10 +55,6 @@ class Writer(plugin.Helper):
     # Required Attributes
     def attributes(self): 
         return ('homeDirectory', 'gidNumber', 'uidNumber')
-
-    # Recursively copy a directory tree, preserving permission modes and access
-    # times, but changing ownership of files to uid:gid. Also, renames
-    # files/directories named dot.foo to .foo.
 
     def parseOptions(self, options):
         context = WriterContext()
@@ -90,8 +86,10 @@ class Writer(plugin.Helper):
         
         return context
 
+    # Recursively copy a directory tree, preserving permission modes and access
+    # times, but changing ownership of files to uid:gid. Also, renames
+    # files/directories named dot.foo to .foo.
     def _copySkelDir(self, srcDir, destDir, uid, gid):
-        import re, shutil
         # Regular expression matching files named dot.foo
         pattern = re.compile('^dot\.')
         for srcFile in os.listdir(srcDir):
@@ -194,7 +192,6 @@ class Writer(plugin.Helper):
                     try:
                         result = os.waitpid(pid, 0)
                     except OSError, e:
-                        import errno
                         if (e.errno == errno.EINTR):
                             continue
                         raise
