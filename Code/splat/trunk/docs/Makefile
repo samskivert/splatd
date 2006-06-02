@@ -16,6 +16,8 @@
 # set XML_DEBUG_CATALOG= to see catalog debugging info
 
 SOURCEDIR?=		xml
+# Install docbook-xsl and set $DOCBOOK_XSL to 
+# /usr/share/xml/docbook/stylesheet/nwalsh for this to work on Ubuntu/Debian
 DOCBOOK_XSL?=	        ${PREFIX}/share/xsl/docbook-xsl/
 XHTMLDIR?=		xhtml
 STYLESHEET?=	        ${DOCBOOK_XSL}/html/chunk.xsl
