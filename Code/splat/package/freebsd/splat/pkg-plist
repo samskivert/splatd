@@ -21,6 +21,9 @@ sbin/splatd
 %%PYTHON_SITELIBDIR%%/splat/helpers/mailForwardingAddress.py
 %%PYTHON_SITELIBDIR%%/splat/helpers/mailForwardingAddress.pyc
 %%PYTHON_SITELIBDIR%%/splat/helpers/mailForwardingAddress.pyo
+%%PYTHON_SITELIBDIR%%/splat/helpers/homeDirectory.py
+%%PYTHON_SITELIBDIR%%/splat/helpers/homeDirectory.pyc
+%%PYTHON_SITELIBDIR%%/splat/helpers/homeDirectory.pyo
 %%PYTHON_SITELIBDIR%%/splat/data/splat_conf.xml
 @dirrm %%PYTHON_SITELIBDIR%%/splat/helpers
 @dirrm %%PYTHON_SITELIBDIR%%/splat/data

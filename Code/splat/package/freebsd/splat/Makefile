@@ -5,13 +5,13 @@
 # $FreeBSD: $
 
 PORTNAME=	splat
-PORTVERSION=	1.0beta10
+PORTVERSION=	1.0beta11
 CATEGORIES=	net python
 MASTER_SITES=	http://dpw.threerings.net/projects/splat/
-DISTNAME=	${PORTNAME}-1.0-beta10
+DISTNAME=	${PORTNAME}-1.0-beta11
 
 MAINTAINER=	landonf@opendarwin.org
-COMMENT=	LIDS is the LDAP Information Distribution System
+COMMENT=	Splat is the Scalable Periodic LDAP Attribute Transmogrifier
 
 BUILD_DEPENDS=	${PYTHON_SITELIBDIR}/ZConfig:${PORTSDIR}/devel/py-zconfig \
 		${PYTHON_SITELIBDIR}/ldap:${PORTSDIR}/net/py-ldap2 \
