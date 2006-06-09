@@ -34,7 +34,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import sys, os, logging, errno, string
+import sys, logging, errno, string
+import os, stat, time
 
 import splat
 from splat import plugin
@@ -79,7 +80,11 @@ class Writer(homeDirectory.Writer):
         context.homeDirContext = homeDirectory.Writer.parseOptions(self, myopt)
         return context
     
-    def work(self, context, ldapEntry):
+    def work(self, context, ldapEntry, modified):
+        # Skip unmodified entries
+        if (not modified):
+            return
+
         # Get LDAP attributes, and make sure we have all the ones we need
         attributes = ldapEntry.attributes
         if (not attributes.has_key('mailForwardingAddress')):
@@ -98,6 +103,20 @@ class Writer(homeDirectory.Writer):
 
         tmpfilename = "%s/.forward.tmp" % home
         filename = "%s/.forward" % home
+
+        # stat() the file, check if it is outdated
+        try:
+            fileTime = os.stat(filename)[stat.ST_MTIME]
+            # Convert LDAP UTC time to seconds since epoch
+            entryTime = time.mktime(time.strptime(ldapEntry.attributes['modifyTimestamp'][0] + 'UTC', "%Y%m%d%H%M%SZ%Z")) - time.timezone
+
+            # If the entry is older than the file, skip it
+            # This will only occur on the very first daemon iteration,
+            # where modified is always 'True'
+            if (entryTime < fileTime):
+                logger.info("Skipping %s, up-to-date" % filename)
+                return
+
         logger.info("Writing mail address to %s" % filename)
 
         # Fork and setuid to write the files

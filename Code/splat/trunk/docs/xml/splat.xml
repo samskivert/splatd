@@ -919,7 +919,38 @@ def parseOptions(self, options):
         <para>The splat daemon will perform an LDAP search on the helper's
         behalf, filter based on group restrictions, and pass individual LDAP
         <classname>Entry</classname> instances to the
-        <methodname>work</methodname> method.</para>
+        <methodname>work</methodname> method. The following method arguments
+        are provided:</para>
+
+        <para><variablelist>
+            <varlistentry>
+              <term>context</term>
+
+              <listitem>
+                <para>The opaque configuration context corresponding with the
+                supplied entry.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>entry</term>
+
+              <listitem>
+                <para>An LDAP <classname>Entry</classname> instance..</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>modified</term>
+
+              <listitem>
+                <para>If true, the supplied LDAP entry has been modified since
+                the last <emphasis>successful</emphasis> helper iteration.
+                This can be used to avoid doing unnecessary work in the
+                helper, such as overwriting identical ssh keys.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist></para>
 
         <para>The <classname>Entry</classname> class provides two instance
         variables: <varname>dn</varname> and <varname>attributes</varname>.
@@ -927,13 +958,21 @@ def parseOptions(self, options):
         object's full <computeroutput>DN</computeroutput>, while
         <varname>attributes</varname> provides a dictionary of LDAP attributes
         and corresponding lists of values. The desired LDAP object attributes
-        must be specified using a class variable in your
-        <classname>splat.plugin.Helper</classname> subclass; these LDAP
-        attributes will used in the LDAP search and will be returned if
+        must be provided by the <methodname>attributes()</methodname> method
+        of your <classname>splat.plugin.Helper</classname> subclass; these
+        LDAP attributes will used in the LDAP search and will be returned if
         available.</para>
 
+        <para>In addition to any requested attributes, the
+        <computeroutput>modifyTimestamp</computeroutput> operational attribute
+        will always be returned. This can be used by your helper to determine
+        if any work should be done; For example, the SSH Public Key helper
+        will <function>stat()</function> the user's key file and compare the
+        two modification dates to determine whether the key should be
+        updated.</para>
+
         <caution>
-          <para>The helper's <methodname>attributes</methodname> method
+          <para>The helper's <methodname>attributes()</methodname> method
           defines the LDAP object attributes that you are interested in -- an
           LDAP Entry will still be returned if it does not contain all of your
           requested attributes. It is your responsibility to ensure that any
@@ -947,7 +986,11 @@ def parseOptions(self, options):
 class MyHelper(splat.plugin.Helper):
     def attributes(self):
         return ('uid', 'sshPublicKey')
-    def work(self, context, ldapEntry):
+    def work(self, context, ldapEntry, modified):
+        # If the entry has not been modified since our last run, skip it.
+        if (not modified):
+            return
+
         if (not ldapEntry.attributes.has_key('sshPublicKey'))
             return
 

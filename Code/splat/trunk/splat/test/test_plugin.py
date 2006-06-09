@@ -38,7 +38,7 @@
 from twisted.trial import unittest
 
 from splat import plugin, ldaputils
-import ldap
+import ldap, time
 from splat.test import slapd
 
 # Useful Constants
@@ -48,6 +48,7 @@ from splat.test import DATA_DIR
 class MockHelper(plugin.Helper):
     def __init__(self):
         self.success = False
+        self.lastRun = 0
 
     def attributes(self):
         return ('dn',)
@@ -56,11 +57,21 @@ class MockHelper(plugin.Helper):
         assert(options['test'] == 'value')
         return options
 
-    def work(self, context, ldapEntry):
+    def work(self, context, ldapEntry, modified):
         assert(context['test'] == 'value')
         assert(ldapEntry.dn == 'uid=john,ou=People,dc=example,dc=com')
+        assert(ldapEntry.attributes.has_key('modifyTimestamp'))
+        # Independently verify the modify time stamp
+        entryMod = time.mktime(time.strptime(ldapEntry.attributes['modifyTimestamp'][0] + 'UTC', "%Y%m%d%H%M%SZ%Z")) - time.timezone
+        if (entryMod >= self.lastRun):
+            assert(modified)
+        else:
+            assert(not modified)
+
         self.context = context
         self.success = True
+
+        self.lastRun = int(time.time())
 
     def modify(self, ldapEntry, modifyList):
         pass
@@ -83,6 +94,23 @@ class HelperWithControllerTestCase(unittest.TestCase):
         self.slapd.stop()
 
     def test_work(self):
+        # Test a new, unmodified entry
+        self.hc.work(self.conn)
+
+        # Try it again, without bumping the modTimestamp
+        self.hc.work(self.conn)
+
+        # Up the modTimestamp
+        # Acquire write privs
+        self.conn.simple_bind(slapd.ROOTDN, slapd.ROOTPW)
+
+        # Find entry and modify it
+        entry = self.conn.search(slapd.BASEDN, ldap.SCOPE_SUBTREE, '(uid=john)', None)[0]
+        mod = ldaputils.Modification(entry.dn)
+        mod.replace('description', 'Up the date')
+        self.conn.modify(mod)
+
+        # Test with the upped mod date
         self.hc.work(self.conn)
 
     def test_requireGroup(self):

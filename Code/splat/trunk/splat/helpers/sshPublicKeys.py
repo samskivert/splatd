@@ -32,7 +32,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import sys, os, logging, errno, string
+import sys, logging, errno, string
+import os, stat, time
 
 import splat
 from splat import plugin
@@ -82,7 +83,11 @@ class Writer(homeDirectory.Writer):
         context.homeDirContext = homeDirectory.Writer.parseOptions(self, myopt)
         return context
 
-    def work(self, context, ldapEntry):
+    def work(self, context, ldapEntry, modified):
+        # Skip unmodified entries
+        if (not modified):
+            return
+
         # Get all needed LDAP attributes, and verify we have what we need
         attributes = ldapEntry.attributes
         if (not attributes.has_key('sshPublicKey')):
@@ -103,6 +108,26 @@ class Writer(homeDirectory.Writer):
         sshdir = "%s/.ssh" % home
         tmpfilename = "%s/.ssh/authorized_keys.tmp" % home
         filename = "%s/.ssh/authorized_keys" % home
+
+        # stat() the key, check if it is outdated
+        try:
+            keyTime = os.stat(filename)[stat.ST_MTIME]
+            # Convert LDAP UTC time to seconds since epoch
+            entryTime = time.mktime(time.strptime(ldapEntry.attributes['modifyTimestamp'][0] + 'UTC', "%Y%m%d%H%M%SZ%Z")) - time.timezone
+
+            # If the entry is older than the key, skip it.
+            # This will only occur on the very first daemon iteration,
+            # where modified is always 'True'
+            if (entryTime < keyTime):
+                logger.info("Skipping %s, up-to-date" % filename)
+                return
+
+        except OSError:
+            # File doesn't exist, or some other error.
+            # Ignore the exception, it'll be caught again
+            # and reported below.
+            pass
+
         logger.info("Writing key to %s" % filename)
 
         # Fork and setuid to write the files

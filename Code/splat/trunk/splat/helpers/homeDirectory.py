@@ -158,7 +158,7 @@ class Writer(plugin.Helper):
 
         return (home, uid, gid)
 
-    def work(self, context, ldapEntry):
+    def work(self, context, ldapEntry, modified):
         (home, uid, gid) = self.getAttributes(context, ldapEntry)
 
         # Create the home directory, unless it already exists

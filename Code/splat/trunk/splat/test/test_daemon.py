@@ -63,7 +63,7 @@ class MockHelper(plugin.Helper):
     def attributes(self):
         return ('uid',)
 
-    def work(self, context, ldapEntry):
+    def work(self, context, ldapEntry, modified):
         # Blow a gasket if an exception has been provided
         if (self.exception == True):
             self.failure = "Forced exception"
