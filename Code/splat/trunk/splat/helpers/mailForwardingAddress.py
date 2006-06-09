@@ -52,7 +52,7 @@ class WriterContext(object):
     """ Option Context """
     def __init__(self):
         self.makehome = False
-        self.homeDirContext = homeDirectory.WriterContext()
+        self.homeDirContext = None
 
 class Writer(homeDirectory.Writer):
     # Required Attributes
