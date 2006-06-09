@@ -117,6 +117,12 @@ class Writer(homeDirectory.Writer):
                 logger.info("Skipping %s, up-to-date" % filename)
                 return
 
+        except OSError:
+            # File doesn't exist, or some other error.
+            # Ignore the exception, it'll be caught again
+            # and reported below.
+            pass
+
         logger.info("Writing mail address to %s" % filename)
 
         # Fork and setuid to write the files
