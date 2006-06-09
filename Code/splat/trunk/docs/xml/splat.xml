@@ -482,7 +482,42 @@
     SearchFilter    (objectClass=posixAccount)
 &lt;/Service&gt;
 
-                </programlisting>
+&lt;Service HomeDirectory&gt;
+    # The helper module
+    Helper          splat.helpers.homeDirectory
+    # The frequency at which the daemon will poll LDAP
+    Frequency       10m 
+        
+    # Helper-specific options. These are passed directly
+    # to the helper plugin.
+    &lt;Option home&gt;
+        # Only create home directories in /home
+        Value /home
+    &lt;/Option&gt;
+    &lt;Option minuid&gt;
+        # Do not create directories for users with a UID less than minuid
+        Value 1000
+    &lt;/Option&gt;
+    &lt;Option mingid&gt;
+        # Do not create directories for users with a GID less than mingid
+        Value 1000
+    &lt;/Option&gt;
+    &lt;Option skeldir&gt;
+        # Skeletal home directory
+        Value /usr/share/skel
+    &lt;/Option&gt;
+    &lt;Option postcreate&gt;
+        # Script to execute post-homedir creation. Will be given the user's
+        # numeric uid, gid, and home directory as arguments
+        Value /usr/local/libexec/splat-home-postcreate.sh
+    &lt;/Option&gt;
+    
+    # The base DN to use when searching for entries.
+    # Defaults to the LDAP BaseDN.
+    SearchBase      ou=People,dc=example,dc=com
+    # The filer to use when searching for entries
+    SearchFilter    (objectClass=posixAccount)
+&lt;/Service&gt;                </programlisting>
       </sect2>
     </sect1>
 
@@ -522,12 +557,95 @@
     </sect1>
 
     <sect1>
+      <title>Home Directories</title>
+
+      <para>The Home Directory service module will query LDAP for users,
+      create a home directory if it does not already exist, copy in template
+      home directory, and optionall run a user supplied post-create
+      script.</para>
+
+      <sect2>
+        <title>LDAP Schema</title>
+
+        <para>The Home Directory service module uses the standard RFC 2307 (or
+        2307bis) schema.</para>
+      </sect2>
+
+      <sect2>
+        <title>Home Directory Service Options</title>
+
+        <para>The Home Directory service module supports sanity checking on
+        the uid, gid, and home directory, home directory templates, and an
+        option post-create script.</para>
+
+        <sect3>
+          <title>Home Directory Service Options</title>
+
+          <variablelist>
+            <varlistentry>
+              <term>home</term>
+
+              <listitem>
+                <para>Only write keys to subdirectories of the specified
+                directory.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>minuid</term>
+
+              <listitem>
+                <para>Do not write keys for uids lower than minuid..</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>mingid</term>
+
+              <listitem>
+                <para>Do note write keys for gids lower than mingid.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>command</term>
+
+              <listitem>
+                <para>Limit user to the specified command.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>skeldir</term>
+
+              <listitem>
+                <para>Home directory template. Defaults to
+                /usr/share/skel.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>postcreate</term>
+
+              <listitem>
+                <para>Execute a post-create command after the user's home
+                directory has been created. The command is passed the new
+                user's numeric uid, numeric gid, and the full path to the new
+                home directory.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </sect3>
+      </sect2>
+    </sect1>
+
+    <sect1>
       <title>SSH Public Keys</title>
 
-      <para>The SSH service module will extract SSH keys from LDAP, create a
-      home directory if it does not already exist, apply any key command
-      limitations specified by the administrator, and atomically overwrite the
-      user's authorized_keys file.</para>
+      <para>The SSH service module will extract SSH keys from LDAP, optionally
+      create a home directory if it does not already exist, apply any key
+      command limitations specified by the administrator, and atomically
+      overwrite the user's authorized_keys file.</para>
 
       <sect2>
         <title>LDAP Schema</title>
@@ -566,6 +684,19 @@ objectclass ( oooSSHClasses:1 NAME 'sshAccount'
           <title>SSH Service Options</title>
 
           <variablelist>
+            <varlistentry>
+              <term>makehome</term>
+
+              <listitem>
+                <para>Create home directories for users. Set
+                to<computeroutput> true</computeroutput> to enable home
+                directory creation, but be aware that other plugins (such as
+                the <computeroutput>homeDirectory</computeroutput> plugin) may
+                also be configured to create the same home directory, with
+                different options.</para>
+              </listitem>
+            </varlistentry>
+
             <varlistentry>
               <term>home</term>
 
@@ -609,9 +740,9 @@ objectclass ( oooSSHClasses:1 NAME 'sshAccount'
       <para>The User Mail Forward service module was written by Kevin Van
       Vechten <email>kevin@opendarwin.org</email> of the OpenDarwin project.
       The module will extract the <emphasis>mailForwardingAddress</emphasis>
-      attribute from LDAP, create a home directory if it does not already
-      exist, and atomically overwrite the user's <filename>.forward</filename>
-      file.</para>
+      attribute from LDAP, optionally create a home directory if it does not
+      already exist, and atomically overwrite the user's
+      <filename>.forward</filename> file.</para>
 
       <sect2>
         <title>LDAP Schema</title>
@@ -637,9 +768,22 @@ objectclass ( oooSSHClasses:1 NAME 'sshAccount'
         on the uid, gid, and home directory.</para>
 
         <sect3>
-          <title>SSH Service Options</title>
+          <title>User Mail Forwarding Service Options</title>
 
           <variablelist>
+            <varlistentry>
+              <term>makehome</term>
+
+              <listitem>
+                <para>Create home directories for users. Set
+                to<computeroutput> true</computeroutput> to enable home
+                directory creation, but be aware that other plugins (such as
+                the <computeroutput>homeDirectory</computeroutput> plugin) may
+                also be configured to create the same home directory, with
+                different options.</para>
+              </listitem>
+            </varlistentry>
+
             <varlistentry>
               <term>home</term>
 
