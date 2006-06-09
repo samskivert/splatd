@@ -102,7 +102,7 @@ class HelperController(object):
         """
         logger = logging.getLogger(splat.LOG_NAME)
 
-        # XXX TODO LDAP scope support
+        # TODO LDAP scope support
         entries = ldapConnection.search(self.searchBase, ldap.SCOPE_SUBTREE, self.searchFilter, self.searchAttr)
 
         # Iterate over the results
