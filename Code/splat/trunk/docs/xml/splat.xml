@@ -608,14 +608,6 @@
             </varlistentry>
 
             <varlistentry>
-              <term>command</term>
-
-              <listitem>
-                <para>Limit user to the specified command.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
               <term>skeldir</term>
 
               <listitem>
