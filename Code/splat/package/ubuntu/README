@@ -1,0 +1,49 @@
+This contains the debian subdirectory that is added to the source directory of
+splat to make debian/ubuntu source and binary packages for splat. To build these
+packages, do the following:
+
+1) Get a splat release tarball, and rename it to splat-ldap_version.orig.tar.gz.
+
+2) Extract the tarball (but keep it there), and svn export the debian directory
+into your extracted splat directory.
+
+3) Change to the splat source directory and make the changes you wish to make.
+Please only make changes to files in the debian/ subdir here; changes to the
+splat code itself should not be done only within this package. If debian/ubuntu
+specific changes need to be made to the code, you could use a debian/patches
+subdirectory and the appropriate debhelper scripts or changes to the
+debian/rules file.
+
+4) Update the debian/changelog file to reflect your changes and bump the version
+number. Any released new package should always have the version
+number bumped. If the same splat release is being used, just change the package
+version number (e.g. change 1.0-rc2-0ubuntu1 to 1.0-rc2-0ubuntu2). dch is a
+helpful tool for updating the changelog.
+
+5) Build source and binary packages with dpkg-buildpackage -rfakeroot. You may
+also need to supply your gpg key ID with the -k option, if you want to sign the
+package and dpkg-buildpackage can't figure your ID out on its own.
+
+6) Optional: make sure the package is valid by running linda and lintian on the
+generated .changes file, and try building it in a pbuilder chroot by running
+pbuilder build on the .dsc file (if you have pbuilder all set up already)
+
+7) Upload your source and/or binary packages somewhere so other people can use
+them.
+
+For example:
+
+mkdir /tmp/splat
+cd /tmp/splat
+wget http://dpw.threerings.net/projects/splat/splat-1.0-rc2.tar.gz
+mv splat-1.0-rc2.tar.gz splat-ldap_1.0-rc2.orig.tar.gz
+tar zxf splat-ldap_1.0-rc2.orig.tar.gz
+svn export svn+ssh://src.earth.threerings.net/sysadmin/Code/splat/package/ubuntu/debian /tmp/splat/splat-1.0-rc2/debian
+cd splat-1.0-rc2
+# make changes you want, including updating debian/changelog
+dpkg-buildpackage -rfakeroot -k01ACE113
+cd ..
+lintian splat-ldap_1.0-rc2-0ubuntu1_i386.changes
+linda splat-ldap_1.0-rc2-0ubuntu1_i386.changes
+sudo pbuilder update
+sudo pbuilder build splat-ldap_1.0-rc2-0ubuntu1.dsc
