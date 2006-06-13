@@ -31,7 +31,7 @@ install: build
 	dh_installdirs
 
 	# Install the package into debian/splat-ldap.
-	$(PYTHON) setup.py install --prefix=$(CURDIR)/debian/splat-ldap/usr --install-scripts=$(CURDIR)/debian/splat-ldap/usr/sbin
+	$(PYTHON) setup.py install --no-compile --prefix=$(CURDIR)/debian/splat-ldap/usr --install-scripts=$(CURDIR)/debian/splat-ldap/usr/sbin
 
 	# Install default configuration file
 	cp debian/splat.conf debian/splat-ldap/etc/splat-ldap/
@@ -55,7 +55,7 @@ binary-arch: build install
 	dh_compress
 	dh_fixperms
 	dh_installdeb
-	dh_shlibdeps
+	dh_python
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
