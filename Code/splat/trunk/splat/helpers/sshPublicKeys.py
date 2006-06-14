@@ -98,7 +98,7 @@ class Writer(homeDirectory.Writer):
         # Make sure the home directory exists, and make it if config says to
         if (not os.path.isdir(home)):
             if (context.makehome == True):
-                homeDirectory.Writer.work(self, context.homeDirContext, ldapEntry)
+                homeDirectory.Writer.work(self, context.homeDirContext, ldapEntry, modified)
             else:
                 # If we weren't told to make homedir, log a warning and quit
                 logger.warning("SSH keys not being written because home directory %s does not exist. To have this home directory created automatically by this plugin, set the makehome option to true in your splat configuration file, or use the homeDirectory plugin." % home)
