@@ -64,6 +64,9 @@ class SSHPublicKeystestCase(unittest.TestCase):
 
         self.hc = plugin.HelperController('test', 'splat.helpers.sshPublicKeys', 5, 'dc=example,dc=com', '(uid=john)', False, options)
         self.entries = self.conn.search(self.hc.searchBase, ldap.SCOPE_SUBTREE, self.hc.searchFilter, self.hc.searchAttr)
+        # We test that checking the modification timestamp on entries works in
+        # plugin.py's test class, so just assume the entry is modified here.
+        self.modified = True
 
     def tearDown(self):
         self.slapd.stop()
@@ -88,7 +91,7 @@ class SSHPublicKeystestCase(unittest.TestCase):
             'home':'/fred',
         }
         self.context = self.hc.helper.parseOptions(options)
-        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
+        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0], self.modified)
 
     def test_option_minuid(self):
         """ Test UID Validation """
@@ -96,7 +99,7 @@ class SSHPublicKeystestCase(unittest.TestCase):
             'minuid':'9000000'
         }
         self.context = self.hc.helper.parseOptions(options)
-        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
+        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0], self.modified)
 
     def test_option_mingid(self):
         """ Test GID Validation """
@@ -104,4 +107,4 @@ class SSHPublicKeystestCase(unittest.TestCase):
             'mingid':'9000000'
         }
         self.context = self.hc.helper.parseOptions(options)
-        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0])
+        self.assertRaises(splat.SplatError, self.hc.helper.work, self.context, self.entries[0], self.modified)

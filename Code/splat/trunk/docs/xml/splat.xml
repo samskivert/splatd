@@ -831,11 +831,13 @@ objectclass ( oooSSHClasses:1 NAME 'sshAccount'
       group-specific options.</para>
 
       <para>The <methodname>parseOptions</methodname> method is expected to
-      return an opaque context for a given set of options. Later invocations
-      of the <methodname>work</methodname> method will be passed a reference
-      to this opaque context and an LDAP <classname>Entry</classname>
-      instance. The <methodname>attributes</methodname> method should just
-      return a tuple of the LDAP attributes needed by a plugin.</para>
+      return an opaque context for a given set of options. Later invocations of
+      the <methodname>work</methodname> method will be passed a reference to
+      this opaque context, an LDAP <classname>Entry</classname> instance, and a
+      boolean value indicating whether the LDAP entry has been modified since
+      the last time the helper has run successfully. The
+      <methodname>attributes</methodname> method should just return a tuple of
+      the LDAP attributes needed by a plugin.</para>
     </sect1>
 
     <sect1>
@@ -857,7 +859,7 @@ class MyHelper(splat.plugin.Helper):
         ...
     def parseOptions(self, options):
         ...
-    def work(self, context, ldapEntry):
+    def work(self, context, ldapEntry, modified):
         ...
 </programlisting>
 
