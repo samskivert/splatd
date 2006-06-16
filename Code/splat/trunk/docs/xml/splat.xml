@@ -544,9 +544,14 @@ def parseOptions(self, options):
 
               <listitem>
                 <para>If true, the supplied LDAP entry has been modified since
-                the last <emphasis>successful</emphasis> helper iteration.
-                This can be used to avoid doing unnecessary work in the
-                helper, such as overwriting identical ssh keys.</para>
+                the last <emphasis>successful</emphasis> helper iteration.  This
+                can be used to avoid doing unnecessary work in the helper, such
+                as overwriting identical ssh keys.
+                <computeroutput>modified</computeroutput> will also be set to
+                true if the <computeroutput>modifyTimestamp</computeroutput>
+                attribute was not found in an LDAP entry. This helps ensure
+                that helpers will still be able to function when this
+                attribute is not available for whatever reason.</para>
               </listitem>
             </varlistentry>
           </variablelist></para>
@@ -574,8 +579,10 @@ def parseOptions(self, options):
           <para>The helper's <methodname>attributes()</methodname> method
           defines the LDAP object attributes that you are interested in -- an
           LDAP Entry will still be returned if it does not contain all of your
-          requested attributes. It is your responsibility to ensure that any
-          required attributes are supplied.</para>
+          requested attributes, and/or the 
+          <computeroutput>modifyTimestamp</computeroutput> attribute. It is your
+          responsibility to ensure that any attributes required by your helper 
+          are supplied.</para>
         </caution>
 
         <example>

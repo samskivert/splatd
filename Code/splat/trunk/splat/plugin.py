@@ -140,6 +140,10 @@ class HelperController(object):
                     modified = True
                 else:
                     modified = False
+            
+            # If there is no modifyTimestamp, just say entry has been modified
+            else:
+                modified = True
 
             try:
                 self.helper.work(context, entry, modified)
