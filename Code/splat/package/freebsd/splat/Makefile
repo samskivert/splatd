@@ -5,10 +5,10 @@
 # $FreeBSD: $
 
 PORTNAME=	splat
-PORTVERSION=	1.0rc4
+PORTVERSION=	1.0
 CATEGORIES=	net python
 MASTER_SITES=	http://dpw.threerings.net/projects/splat/
-DISTNAME=	${PORTNAME}-1.0-rc4
+DISTNAME=	${PORTNAME}-1.0
 
 MAINTAINER=	landonf@opendarwin.org
 COMMENT=	Splat is the Scalable Periodic LDAP Attribute Transmogrifier
