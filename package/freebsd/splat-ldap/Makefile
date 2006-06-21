@@ -1,14 +1,14 @@
-# New ports collection makefile for:	py-splat
+# New ports collection makefile for:	splat-ldap
 # Date created:		26 September 2005
 # Whom:			Landon Fuller <landonf@opendarwin.org>
 #
 # $FreeBSD: $
 
-PORTNAME=	splat
+PORTNAME=	splat-ldap
 PORTVERSION=	1.0
-CATEGORIES=	net python
+CATEGORIES=	net
 MASTER_SITES=	http://dpw.threerings.net/projects/splat/
-DISTNAME=	${PORTNAME}-1.0
+DISTNAME=	splat-1.0
 
 MAINTAINER=	landonf@opendarwin.org
 COMMENT=	Splat is the Scalable Periodic LDAP Attribute Transmogrifier
@@ -24,9 +24,18 @@ USE_PYTHON=	2.2+
 USE_PYDISTUTILS=	yes
 USE_RC_SUBR=	splatd.sh
 SUB_LIST+=	PYTHON_CMD=${PYTHON_CMD}
+MAN5=           splat.conf.5
+MAN8=           splatd.8
 
 post-install:
 	${INSTALL_DATA} ${WRKSRC}/splat.conf ${LOCALBASE}/etc/splat.conf.sample
 	${MV} -f ${LOCALBASE}/bin/splatd ${LOCALBASE}/sbin/splatd
+	${INSTALL_MAN} ${WRKSRC}/docs/man/splat.conf.5 ${MANPREFIX}/man/man5
+	${INSTALL_MAN} ${WRKSRC}/docs/man/splatd.8 ${MANPREFIX}/man/man8
+
+.if !defined(NOPORTDOCS)
+	${MKDIR} ${DOCSDIR}/xhtml
+	${INSTALL_MAN} ${WRKSRC}/docs/xhtml/* ${DOCSDIR}/xhtml
+.endif
 
 .include <bsd.port.mk>
