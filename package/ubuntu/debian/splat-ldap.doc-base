@@ -1,9 +1,0 @@
-Document: splat-ldap
-Title: Debian splat-ldap Manual
-Author: Landon Fuller and Three Rings Design, Inc.
-Abstract: This manual describes what splat-ldap is and how it can be used.
-Section: Apps/Net
-
-Format: HTML
-Index: /usr/share/doc/splat-ldap/html/index.html
-Files: /usr/share/doc/splat-ldap/html/*.html

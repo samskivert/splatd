@@ -18,13 +18,13 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../splat-ldap.templates:3
+#: ../splatd.templates:3
 msgid "Enter the URI of your LDAP server"
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../splat-ldap.templates:3
+#: ../splatd.templates:3
 msgid ""
 "This URI typically will be the same as would be found in your /etc/ldap/ldap."
 "conf file as the URI setting. For example, to connect with SSL to an LDAP "
@@ -34,13 +34,13 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../splat-ldap.templates:11
+#: ../splatd.templates:11
 msgid "Enter the default search base for your LDAP server"
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../splat-ldap.templates:11
+#: ../splatd.templates:11
 msgid ""
 "This is the Base DN, which is typically the same as the BASE setting in /etc/"
 "ldap/ldap.conf. For example, this could be something like dc=example,dc=com "

@@ -30,11 +30,11 @@ install: build
 	dh_clean -k 
 	dh_installdirs
 
-	# Install the package into debian/splat-ldap.
-	$(PYTHON) setup.py install --no-compile --prefix=$(CURDIR)/debian/splat-ldap/usr --install-scripts=$(CURDIR)/debian/splat-ldap/usr/sbin
+	# Install the package into debian/splatd.
+	$(PYTHON) setup.py install --no-compile --prefix=$(CURDIR)/debian/splatd/usr --install-scripts=$(CURDIR)/debian/splatd/usr/sbin
 
 	# Install default configuration file
-	cp debian/splat.conf debian/splat-ldap/etc/splat-ldap/
+	cp debian/splat.conf debian/splatd/etc/splatd/
 
 # Build architecture-independent files here.
 binary-indep: build install
@@ -46,11 +46,11 @@ binary-arch: build install
 	dh_testroot
 	dh_installchangelogs 
 	# Install splat manual
-	cp -a docs/xhtml/* debian/splat-ldap/usr/share/doc/splat-ldap/html/
+	cp -a docs/xhtml/* debian/splatd/usr/share/doc/splatd/html/
 	dh_installdocs
 	dh_installexamples splat.conf
 	dh_installinit
-	dh_installman debian/splatd.8
+	dh_installman
 	dh_installdebconf
 	dh_compress
 	dh_fixperms

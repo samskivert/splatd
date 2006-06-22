@@ -1,4 +1,4 @@
-Template: splat-ldap/uri
+Template: splatd/uri
 Type: string
 _Description: Enter the URI of your LDAP server
  This URI typically will be the same as would be found in your
@@ -6,7 +6,7 @@ _Description: Enter the URI of your LDAP server
  SSL to an LDAP server at directory.example.com,
  ldaps://directory.example.com would be your URI.
 
-Template: splat-ldap/basedn
+Template: splatd/basedn
 Type: string
 _Description: Enter the default search base for your LDAP server
  This is the Base DN, which is typically the same as the BASE setting in

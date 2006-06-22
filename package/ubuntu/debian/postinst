@@ -1,5 +1,5 @@
 #! /bin/sh
-# postinst script for splat-ldap
+# postinst script for splatd
 #
 # see: dh_installdeb(1)
 
@@ -20,13 +20,13 @@ set -e
 case "$1" in
     configure)
     
-    CONFIGFILE=/etc/splat-ldap/splat.conf
+    CONFIGFILE=/etc/splatd/splat.conf
     . /usr/share/debconf/confmodule
     
     # Get values from the debconf db.
-    db_get splat-ldap/uri
+    db_get splatd/uri
     uri="$RET"
-    db_get splat-ldap/basedn
+    db_get splatd/basedn
     basedn="$RET"
     
     # Set values where variables live in the config file.

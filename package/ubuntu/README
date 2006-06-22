@@ -2,7 +2,7 @@ This contains the debian subdirectory that is added to the source directory of
 splat to make debian/ubuntu source and binary packages for splat. To build these
 packages, do the following:
 
-1) Get a splat release tarball, and rename it to splat-ldap_version.orig.tar.gz.
+1) Get a splat release tarball, and rename it to splatd_version.orig.tar.gz.
 
 2) Extract the tarball (but keep it there), and svn export the debian directory
 into your extracted splat directory.
@@ -17,7 +17,7 @@ debian/rules file.
 4) Update the debian/changelog file to reflect your changes and bump the version
 number. Any released new package should always have the version
 number bumped. If the same splat release is being used, just change the package
-version number (e.g. change 1.0-rc2-0ubuntu1 to 1.0-rc2-0ubuntu2). dch is a
+version number (e.g. change 1.0-0ubuntu1 to 1.0-0ubuntu2). dch is a
 helpful tool for updating the changelog.
 
 5) Build source and binary packages with dpkg-buildpackage -rfakeroot. You may
@@ -35,15 +35,15 @@ For example:
 
 mkdir /tmp/splat
 cd /tmp/splat
-wget http://dpw.threerings.net/projects/splat/splat-1.0-rc2.tar.gz
-mv splat-1.0-rc2.tar.gz splat-ldap_1.0-rc2.orig.tar.gz
-tar zxf splat-ldap_1.0-rc2.orig.tar.gz
-svn export svn+ssh://src.earth.threerings.net/sysadmin/Code/splat/package/ubuntu/debian /tmp/splat/splat-1.0-rc2/debian
-cd splat-1.0-rc2
+wget http://dpw.threerings.net/projects/splat/splat-1.0.tar.gz
+mv splat-1.0.tar.gz splatd_1.0.orig.tar.gz
+tar zxf splatd_1.0.orig.tar.gz
+svn export svn+ssh://src.earth.threerings.net/sysadmin/Code/splat/package/ubuntu/debian /tmp/splat/splat-1.0/debian
+cd splat-1.0
 # make changes you want, including updating debian/changelog
 dpkg-buildpackage -rfakeroot -k01ACE113
 cd ..
-lintian splat-ldap_1.0-rc2-0ubuntu1_i386.changes
-linda splat-ldap_1.0-rc2-0ubuntu1_i386.changes
+lintian splatd_1.0-0ubuntu1_i386.changes
+linda splatd_1.0-0ubuntu1_i386.changes
 sudo pbuilder update
-sudo pbuilder build splat-ldap_1.0-rc2-0ubuntu1.dsc
+sudo pbuilder build splatd_1.0-0ubuntu1.dsc

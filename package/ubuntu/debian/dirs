@@ -1,3 +1,2 @@
-usr/share/man/man8
-usr/share/doc/splat-ldap/html
-etc/splat-ldap
+usr/share/doc/splatd/html
+etc/splatd

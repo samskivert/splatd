@@ -1,6 +1,6 @@
-splat-ldap (1.0-rc2-0ubuntu1) dapper; urgency=low
+splatd (1.0-0ubuntu1) dapper; urgency=low
 
   * Initial release.
 
- -- Nick Barkas <snb@threerings.net>  Mon, 12 Jun 2006 13:25:36 -0700
+ -- Nick Barkas <snb@threerings.net>  Wed, 21 Jun 2006 13:14:36 -0700
 

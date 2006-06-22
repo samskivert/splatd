@@ -1,7 +1,7 @@
 #! /bin/sh
 #
 # Based on: @(#)skeleton 1.9 26-Feb-2001 miquels@cistron.nl
-# Modified for splat-ldap package by Nick Barkas <snb@threerings.net>
+# Modified for splatd package by Nick Barkas <snb@threerings.net>
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/sbin/splatd
@@ -11,8 +11,8 @@ PIDFILE=/var/run/splatd.pid
 
 test -x $DAEMON || exit 0
 
-if test -f /etc/default/splat-ldap; then
-    . /etc/default/splat-ldap
+if test -f /etc/default/splatd; then
+    . /etc/default/splatd
 fi
 
 set -e

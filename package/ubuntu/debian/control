@@ -1,11 +1,11 @@
-Source: splat-ldap
+Source: splatd
 Section: net
 Priority: optional
 Maintainer: Nick Barkas <snb@threerings.net>
 Build-Depends: debhelper (>= 4.0.0), python2.4
 Standards-Version: 3.6.2
 
-Package: splat-ldap
+Package: splatd
 Architecture: any
 Depends: ${misc:Depends}, ${python:Depends}, python2.4-ldap, python2.4-twisted, zope3
 Description: Scalable Periodic LDAP Attribute Transmogrifier

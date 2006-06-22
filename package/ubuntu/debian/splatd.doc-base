@@ -1,0 +1,9 @@
+Document: splatd
+Title: Debian splatd Manual
+Author: Landon Fuller, Nick Barkas, and Three Rings Design, Inc.
+Abstract: This manual describes what Splat is and how it can be used.
+Section: Apps/Net
+
+Format: HTML
+Index: /usr/share/doc/splatd/html/index.html
+Files: /usr/share/doc/splatd/html/*.html
