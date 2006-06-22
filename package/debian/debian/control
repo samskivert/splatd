@@ -1,0 +1,20 @@
+Source: splatd
+Section: net
+Priority: optional
+Maintainer: Nick Barkas <snb@threerings.net>
+Build-Depends: debhelper (>= 4.0.0), python2.4
+Standards-Version: 3.6.2
+
+Package: splatd
+Architecture: any
+Depends: ${misc:Depends}, ${python:Depends}, python2.4-ldap, python2.4-twisted, zope3
+Description: Scalable Periodic LDAP Attribute Transmogrifier
+ Splat is a daemon designed to help keep information in an LDAP directory in
+ sync with information outside of an LDAP directory. This information can be
+ any set of attributes on any object in the LDAP directory. 
+ .
+ Splat currently supports writing out the following information:
+ .
+   * SSH Public Keys
+   * User .forward Files
+   * User Home Directories
