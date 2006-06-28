@@ -1,6 +1,6 @@
-splatd (1.0-0ubuntu1) dapper; urgency=low
+splatd (1.0-0ubuntu1) edgy; urgency=low
 
   * Initial release.
 
- -- Nick Barkas <snb@threerings.net>  Wed, 21 Jun 2006 13:14:36 -0700
+ -- Nick Barkas <snb@threerings.net>  Wed, 28 Jun 2006 13:14:36 -0700
 

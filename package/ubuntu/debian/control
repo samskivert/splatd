@@ -2,8 +2,8 @@ Source: splatd
 Section: net
 Priority: optional
 Maintainer: Nick Barkas <snb@threerings.net>
-Build-Depends: debhelper (>= 4.0.0), python2.4
-Standards-Version: 3.6.2
+Build-Depends: debhelper (>= 5.0.7), python2.4
+Standards-Version: 3.7.2
 
 Package: splatd
 Architecture: any
@@ -18,3 +18,5 @@ Description: Scalable Periodic LDAP Attribute Transmogrifier
    * SSH Public Keys
    * User .forward Files
    * User Home Directories
+ .
+ Homepage: http://dpw.threerings.net/projects/splat/
