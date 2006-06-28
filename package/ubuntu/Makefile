@@ -8,7 +8,8 @@ KEYID=		01ACE113
 
 all:	pkg
 
-fetch:
+fetch: fetch-stamp
+fetch-stamp:
 	wget $(URL)$(SRC)
 	wget $(URL)$(SRC).sig
 	gpg --verify $(SRC).sig
@@ -16,16 +17,22 @@ fetch:
 
 clean:
 	rm -rf splat* *-stamp
-	
-debianize: fetch-stamp
+
+debdir:	debdir-stamp
+debdir-stamp: fetch-stamp
 	tar zxf $(SRC)
 	mv $(SRC) splatd_$(VERSION).orig.tar.gz
 	svn export debian splat-$(VERSION)/debian
 	touch debdir-stamp
 
-pkg: debdir-stamp
-	cd splat-$(VERSION); dpkg-buildpackage -rfakeroot -k$(KEYID)
+pkg:	pkg-stamp
+pkg-stamp: debdir-stamp
+	cd splat-$(VERSION) && dpkg-buildpackage -rfakeroot -uc -us && cd ..
 	touch pkg-stamp
+
+sign:	sign-stamp
+sign-stamp:	pkg-stamp
+	debsign -k$(KEYID) splatd_*.changes
 
 check: pkg-stamp
 	lintian splatd_*.changes
