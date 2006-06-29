@@ -25,14 +25,20 @@ debdir-stamp: fetch-stamp
 	rsync -a --exclude .svn debian splat-$(VERSION)
 	touch debdir-stamp
 
+srcpkg:	srcpkg-stamp
+srcpkg-stamp:	debdir-stamp
+	cd splat-$(VERSION) && dpkg-buildpackage -rfakeroot -uc -us -S -sa && cd ..
+	touch srcpkg-stamp
+
 pkg:	pkg-stamp
 pkg-stamp: debdir-stamp
-	cd splat-$(VERSION) && dpkg-buildpackage -rfakeroot -uc -us -S -sa && cd ..
+	cd splat-$(VERSION) && dpkg-buildpackage -rfakeroot -uc -us && cd ..
 	touch pkg-stamp
 
 sign:	sign-stamp
-sign-stamp:	pkg-stamp
-	debsign -k$(KEYID) splatd_*.changes
+sign-stamp:	pkg-stamp srcpkg-stamp
+	debsign -k$(KEYID) splatd_*i386.changes
+	debsign -k$(KEYID) splatd_*source.changes
 
 check: pkg-stamp
 	lintian splatd_*.changes
