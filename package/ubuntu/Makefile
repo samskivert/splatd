@@ -22,12 +22,12 @@ debdir:	debdir-stamp
 debdir-stamp: fetch-stamp
 	tar zxf $(SRC)
 	mv $(SRC) splatd_$(VERSION).orig.tar.gz
-	svn export debian splat-$(VERSION)/debian
+	rsync -a --exclude .svn debian splat-$(VERSION)
 	touch debdir-stamp
 
 pkg:	pkg-stamp
 pkg-stamp: debdir-stamp
-	cd splat-$(VERSION) && dpkg-buildpackage -rfakeroot -uc -us && cd ..
+	cd splat-$(VERSION) && dpkg-buildpackage -rfakeroot -uc -us -S -sa && cd ..
 	touch pkg-stamp
 
 sign:	sign-stamp
