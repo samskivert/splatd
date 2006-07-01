@@ -33,7 +33,6 @@ pkg-stamp: debdir-stamp
 sign:	sign-stamp
 sign-stamp:	pkg-stamp
 	debsign -k$(KEYID) splatd_*i386.changes
-	debsign -k$(KEYID) splatd_*source.changes
 
 check: pkg-stamp
 	lintian splatd_*.changes
