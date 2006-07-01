@@ -23,6 +23,7 @@ clean:
 	rm -f splat/__init__.pyc
 
 	dh_clean 
+	debconf-updatepo
 
 install: build
 	dh_testdir
