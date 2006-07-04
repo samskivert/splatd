@@ -15,6 +15,7 @@
 			<li><a href="#intro">Introduction</a></li>
 			<li><a href="#get">Download</a></li>
 			<li><a href="#require">Requirements</a></li>
+            <li><a href="#install">Installation</a></li>
 			<li><a href="#support">Support</a></li>
 			<li><a href="#cav">Caveats</a></li>
 		</ul>
@@ -63,7 +64,10 @@
 			<li><a href="http://python-ldap.sourceforge.net/">Python LDAP</a></li>
 			<li><a href="http://www.zope.org/Members/fdrake/zconfig/">ZConfig</a></li>
 		</ul>
-		<p>
+        
+        <h2><a id="install">Installation</a></h2>
+		
+        <p>
 			Splat uses the standard Python distutils.
 			To install, run setup.py:
 		</p>
@@ -75,6 +79,25 @@
 			Python-specified bin directory. An example configuration
 			file, <em>splat.conf</em>, is supplied with the source distribution.
 		</p>
+
+        <p>
+            There are also splat packages available for several operating
+            systems. Splat is in the FreeBSD ports collection as net/splatd, and
+            in DarwinPorts as splat. There are also Debian unstable and Ubuntu
+            6.06 source and i386 binary packages that can be installed from our
+            apt repositories by adding the appropriate lines below to 
+            /etc/apt/sources.list:
+        </p>
+
+        <pre>
+deb http://dpw.threerings.net/debian unstable main
+deb-src http://dpw.threerings.net/debian unstable main
+
+deb http://dpw.threerings.net/ubuntu dapper universe
+deb-src http://dpw.threerings.net/ubuntu dapper universe
+        </pre>
+
+        <p>The Ubuntu and Debian packages are named splatd.</p>
 
 		<h2><a id="support">Support</a></h2>
 		<p>
