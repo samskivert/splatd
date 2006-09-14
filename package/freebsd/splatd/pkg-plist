@@ -24,6 +24,12 @@ sbin/splatd
 %%PYTHON_SITELIBDIR%%/splat/helpers/homeDirectory.py
 %%PYTHON_SITELIBDIR%%/splat/helpers/homeDirectory.pyc
 %%PYTHON_SITELIBDIR%%/splat/helpers/homeDirectory.pyo
+%%PYTHON_SITELIBDIR%%/splat/helpers/homeHelper.py
+%%PYTHON_SITELIBDIR%%/splat/helpers/homeHelper.pyc
+%%PYTHON_SITELIBDIR%%/splat/helpers/homeHelper.pyo
+%%PYTHON_SITELIBDIR%%/splat/helpers/purgeUser.py
+%%PYTHON_SITELIBDIR%%/splat/helpers/purgeUser.pyc
+%%PYTHON_SITELIBDIR%%/splat/helpers/purgeUser.pyo
 %%PYTHON_SITELIBDIR%%/splat/data/splat_conf.xml
 @dirrm %%PYTHON_SITELIBDIR%%/splat/helpers
 @dirrm %%PYTHON_SITELIBDIR%%/splat/data
@@ -35,6 +41,7 @@ sbin/splatd
 %%PORTDOCS%%%%DOCSDIR%%/xhtml/ch02s02.html
 %%PORTDOCS%%%%DOCSDIR%%/xhtml/ch02s03.html
 %%PORTDOCS%%%%DOCSDIR%%/xhtml/ch02s04.html
+%%PORTDOCS%%%%DOCSDIR%%/xhtml/ch02s05.html
 %%PORTDOCS%%%%DOCSDIR%%/xhtml/ch03.html
 %%PORTDOCS%%%%DOCSDIR%%/xhtml/ch03s02.html
 %%PORTDOCS%%%%DOCSDIR%%/xhtml/docbook.css
