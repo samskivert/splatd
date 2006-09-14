@@ -8,7 +8,7 @@ PORTNAME=	splatd
 PORTVERSION=	1.1
 CATEGORIES=	net
 MASTER_SITES=	http://dpw.threerings.net/projects/splat/
-DISTNAME=	splat-1.1-rc1
+DISTNAME=	splat-1.1-rc2
 
 MAINTAINER=	dpw@threerings.net
 COMMENT=	Splat is the Scalable Periodic LDAP Attribute Transmogrifier
