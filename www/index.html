@@ -22,30 +22,33 @@
 
 		<h2><a id="intro">Introduction</a></h2>
 		<p>
-			Splat is a daemon designed to help keep information in
-			an LDAP directory in sync with information outside of an LDAP directory.
-			This information can be any set of attributes on any object in the LDAP directory.
-		</p>
+            Splat is a daemon designed to help keep information in an LDAP
+            directory in sync with information outside of an LDAP directory.
+            This information can be any set of attributes on any object in the
+            LDAP directory.
+        </p>
 
 		<p>
-			Splat currently supports writing out the following information:
+			Splat currently supports the following:
 		</p>
 
 		<ul>
-			<li>SSH Public Keys</li>
-			<li>User .forward Files</li>
-			<li>User Home Directories</li>
+			<li>Writing SSH public keys</li>
+			<li>Writing .forward files</li>
+			<li>Creating user home directories</li>
+            <li>Archiving and deleting home directories of deleted users</li>
 		</ul>
 
 		<p>
-			You may send patches, bug reports, and complaints to: splat@dpw.threerings.net
+			You may send patches, bug reports, and complaints to: 
+            splat@dpw.threerings.net
 		</p>
 
 		<h2><a id="get">Download</a></h2>
 		<p>
-			The source for Splat 1.0 can be downloaded
-			<a href="splat-1.0.tar.gz">here</a>, and verified against this <a
-				href="splat-1.0.tar.gz.asc">PGP signature.</a>
+			The source for Splat 1.1-rc1 can be downloaded
+			<a href="splat-1.1-rc1.tar.gz">here</a>, and verified against this 
+            <a href="splat-1.1-rc1.tar.gz.sig">PGP signature.</a>
 		</p>
         <p>
             The public key needed to verify this signature (key ID 0x85971303) 
@@ -64,17 +67,16 @@
         <h2><a id="install">Installation</a></h2>
 		
         <p>
-			Splat uses the standard Python distutils.
-			To install, run setup.py:
+			Splat uses the standard Python distutils. To install, run setup.py:
 		</p>
 		<pre>./setup.py install</pre>
 
 		<p>
-			The splat framework will be installed in the Python site-packages directory.
-			The <em>splatd</em> daemon will be installed in the
-			Python-specified bin directory. An example configuration
-			file, <em>splat.conf</em>, is supplied with the source distribution.
-		</p>
+            The splat framework will be installed in the Python site-packages
+            directory.  The <em>splatd</em> daemon will be installed in the
+            Python-specified bin directory. An example configuration file,
+            <em>splat.conf</em>, is supplied with the source distribution.
+        </p>
 
         <p>
             There are also splat packages available for several operating
@@ -85,36 +87,42 @@
             /etc/apt/sources.list:
         </p>
 
-        <pre>
-deb http://dpw.threerings.net/debian unstable main
-deb-src http://dpw.threerings.net/debian unstable main
+<pre>deb http://dpw.threerings.net/debian unstable main
+deb-src http://dpw.threerings.net/debian unstable main</pre>
 
-deb http://dpw.threerings.net/ubuntu dapper universe
-deb-src http://dpw.threerings.net/ubuntu dapper universe
-        </pre>
+        <p>Or:</p>
+
+<pre>deb http://dpw.threerings.net/ubuntu dapper universe
+deb-src http://dpw.threerings.net/ubuntu dapper universe</pre>
 
         <p>The Ubuntu and Debian packages are named splatd.</p>
 
 		<h2><a id="support">Support</a></h2>
 		<p>
-			A <a href="manual/">Splat Manual</a> is available.
-			You may also join the <a href="https://dpw.threerings.net/mailman/listinfo/splat">Splat Mailing List</a>.
-		</p>
+            A <a href="manual/">Splat Manual</a> is available.  You may also
+            join the <a
+            href="https://dpw.threerings.net/mailman/listinfo/splat">Splat Mailing List</a>.
+        </p>
 		
 		<h2><a id="caveats">Caveats</a></h2>
 		<ul>
 			<li>
-				Splat current stores the full search result in memory. This may cause
-				excessive memory consumption with extremely large result sets.
-			</li>
+                Splat current stores the full search result in memory. This may
+                cause excessive memory consumption with extremely large result
+                sets.
+            </li>
 			<li>
-				Blocking LDAP calls are used. A complex query or overloaded/unreachable LDAP server
-				may cause Splat to block for significant periods of time.
-			</li>
+                Blocking LDAP calls are used. A complex query or
+                overloaded/unreachable LDAP server may cause Splat to block for
+                significant periods of time.
+            </li>
 			<li>
 				TLS/SSL is supported, but StartTLS is not.
 			</li>
 		</ul>
-		<p>These issues will be addressed in a future release. Patches are welcome.</p>
+		<p>
+            These issues will be addressed in a future release. Patches are
+            welcome.
+        </p>
 	</body>
 </html>	
