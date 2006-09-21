@@ -8,9 +8,9 @@ PORTNAME=	splatd
 PORTVERSION=	1.1
 CATEGORIES=	net
 MASTER_SITES=	http://dpw.threerings.net/projects/splat/
-DISTNAME=	splat-1.1-rc2
+DISTNAME=	splat-1.1-rc3
 
-MAINTAINER=	dpw@threerings.net
+MAINTAINER=	snb@threerings.net
 COMMENT=	Splat is the Scalable Periodic LDAP Attribute Transmogrifier
 
 BUILD_DEPENDS=	${PYTHON_SITELIBDIR}/ZConfig:${PORTSDIR}/devel/py-zconfig \
