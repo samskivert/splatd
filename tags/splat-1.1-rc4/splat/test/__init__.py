@@ -1,7 +1,9 @@
 # __init__.py vi:ts=4:sw=4:expandtab:
 #
 # Scalable Periodic LDAP Attribute Transmogrifier
-# Author: Will Barton <wbb4@opendarwin.org>
+# Authors:
+#       Will Barton <wbb4@opendarwin.org>
+#       Landon Fuller <landonf@opendarwin.org>
 #
 # Copyright (c) 2005 Three Rings Design, Inc.
 # All rights reserved.
@@ -32,21 +34,8 @@
 
 import os
 
-__all__ = ['helpers', 'test']
-
-# General Info
-__version__ = '1.1-rc4'
-__license__ = 'BSD License'
-__author__ = 'Three Rings Design, Inc.'
-__author_email__ = 'dpw@threerings.net'
-__copyright__ = 'Copyright (C) 2005 Three Rings Design, Inc. All rights reserved.'
+__all__ = ['test_daemon', 'test_plugin']
 
 # Useful Constants
-LOG_NAME = 'splat:'
 INSTALL_DIR = os.path.dirname(__file__)
 DATA_DIR = os.path.join(INSTALL_DIR, 'data')
-CONFIG_SCHEMA = os.path.join(DATA_DIR, "splat_conf.xml")
-
-# Exceptions
-class SplatError(Exception):
-    pass
