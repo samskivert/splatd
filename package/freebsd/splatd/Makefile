@@ -28,8 +28,8 @@ MAN5=		splat.conf.5
 MAN8=		splatd.8
 
 post-install:
-	${INSTALL_DATA} ${WRKSRC}/splat.conf ${LOCALBASE}/etc/splat.conf.sample
-	${MV} -f ${LOCALBASE}/bin/splatd ${LOCALBASE}/sbin/splatd
+	${INSTALL_DATA} ${WRKSRC}/splat.conf ${PREFIX}/etc/splat.conf.sample
+	${MV} -f ${PREFIX}/bin/splatd ${PREFIX}/sbin/splatd
 	${INSTALL_MAN} ${WRKSRC}/docs/man/splat.conf.5 ${MANPREFIX}/man/man5
 	${INSTALL_MAN} ${WRKSRC}/docs/man/splatd.8 ${MANPREFIX}/man/man8
 
