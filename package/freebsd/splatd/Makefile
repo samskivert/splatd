@@ -24,8 +24,8 @@ USE_PYTHON=	2.4+
 USE_PYDISTUTILS=	yes
 USE_RC_SUBR=	splatd.sh
 SUB_LIST+=	PYTHON_CMD=${PYTHON_CMD}
-MAN5=           splat.conf.5
-MAN8=           splatd.8
+MAN5=		splat.conf.5
+MAN8=		splatd.8
 
 post-install:
 	${INSTALL_DATA} ${WRKSRC}/splat.conf ${LOCALBASE}/etc/splat.conf.sample
