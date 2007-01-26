@@ -1,9 +1,21 @@
 #! /bin/sh
-#
-# Based on: @(#)skeleton 1.9 26-Feb-2001 miquels@cistron.nl
-# Modified for splatd package by Nick Barkas <snb@threerings.net>
+### BEGIN INIT INFO
+# Provides:          splatd
+# Required-Start:    $network $named $syslog
+# Required-Stop:     $network $named $syslog
+# Should-Start:
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: Start and stop Splat daemon.
+# Description:       Start and stop Splat: The Scalable Periodic LDAP 
+#                    Attribute Transmogrifier.
+### END INIT INFO
 
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+# Author: Nick Barkas <snb@threerings.net>
+# Based on: @(#)skeleton 1.9 26-Feb-2001 miquels@cistron.nl
+
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
 DAEMON=/usr/sbin/splatd
 NAME=splatd
 DESC="Scalable Periodic LDAP Attribute Transmogrifier"

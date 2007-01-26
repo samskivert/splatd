@@ -1,7 +1,7 @@
 # Fetch splat source, extract, add debian subdirectory, and build source and
 # binary .deb packages. 
 
-VERSION=	1.0
+VERSION=	1.1
 URL=		http://dpw.threerings.net/projects/splat/
 SRC=		splat-$(VERSION).tar.gz
 KEYID=		01ACE113
@@ -41,5 +41,5 @@ sign-stamp:	pkg-stamp srcpkg-stamp
 	debsign -k$(KEYID) splatd_*source.changes
 
 check: pkg-stamp
-	lintian splatd_*.changes
-	linda splatd_*.changes
+	-lintian splatd_*.changes
+	-linda splatd_*.changes

@@ -56,7 +56,7 @@ binary-arch: build install
 	dh_compress
 	dh_fixperms
 	dh_installdeb
-	dh_python
+	DH_PYCENTRAL=nomove dh_pycentral
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
