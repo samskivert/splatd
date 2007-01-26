@@ -1,8 +1,0 @@
-This contains the debian subdirectory that is added to the source directory of
-splat to make debian/ubuntu source and binary packages for splat. To build these
-packages, just run make after making whatever changes you wanted to in
-debian/foo. If you want to upload the packages, make sign to add gpg signatures.
-You may need to increment the version number and/or change the key ID used in
-the makefile when building or signing. To check the built packages with lintian
-and linda, make check. make clean will clean up everything (including any
-packages you may have built). 

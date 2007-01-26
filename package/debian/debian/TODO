@@ -1,2 +1,0 @@
-Is there some way we can depend on something other than zope3 to provide
-ZConfig? It is a rather large package to pull in just for that.

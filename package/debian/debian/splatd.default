@@ -1,3 +1,0 @@
-# Additional options that are passed to the Daemon.
-CONF=/etc/splatd/splat.conf
-DAEMON_OPTS="-f $CONF"
