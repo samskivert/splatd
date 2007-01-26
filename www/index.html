@@ -86,21 +86,22 @@
         <p>
             There are also splat packages available for several operating
             systems. Splat is in the FreeBSD ports collection as net/splatd, and
-            in DarwinPorts as splat. There are also Debian unstable and Ubuntu
-            6.06 source and i386 binary packages that can be installed from our
-            apt repositories by adding the appropriate lines below to 
-            /etc/apt/sources.list:
+            in MacPorts as splat. There is an Ubuntu 6.06 package for Splat 
+			1.0 that can be installed from our apt repositories by adding the 
+			lines below to /etc/apt/sources.list:
         </p>
-
-<pre>deb http://dpw.threerings.net/debian unstable main
-deb-src http://dpw.threerings.net/debian unstable main</pre>
-
-        <p>Or:</p>
 
 <pre>deb http://dpw.threerings.net/ubuntu dapper universe
 deb-src http://dpw.threerings.net/ubuntu dapper universe</pre>
 
-        <p>The Ubuntu and Debian packages are named splatd.</p>
+        <p>
+			The package name is splatd. A more recent source package for Splat 
+			1.1 can be found in <a href="http://revu.tauware.de/details.py?upid=4198">
+			Revu</a>. There is no current Debian package, but it should be 
+			trivial to port the Ubuntu package. An RFP bug report for a Debian 
+			Splat package can be found <a href=
+			"http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=374926">here</a>.
+		</p>
 
         <h2><a id="support">Support</a></h2>
         <p>
