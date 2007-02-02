@@ -5,10 +5,10 @@
 # $FreeBSD: $
 
 PORTNAME=	splatd
-PORTVERSION=	1.1
+PORTVERSION=	1.1.1.r1
 CATEGORIES=	net
 MASTER_SITES=	http://dpw.threerings.net/projects/splat/
-DISTNAME=	splat-1.1
+DISTNAME=	splat-1.1.1-rc1
 
 MAINTAINER=	snb@threerings.net
 COMMENT=	Splat is the Scalable Periodic LDAP Attribute Transmogrifier
