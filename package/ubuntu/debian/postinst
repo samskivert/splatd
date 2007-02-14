@@ -21,18 +21,22 @@ case "$1" in
     configure)
     
     CONFIGFILE=/etc/splatd/splat.conf
+    CONFTEMPLATE=/usr/share/splatd/splat.conf.in
     . /usr/share/debconf/confmodule
+   
+    # Write out a splat.conf that loads no plugins but allows splatd to start 
+    # if there isn't already such a file.
+    if [ ! -f $CONFIGFILE ]; then
+        # Get values from the debconf db.
+        db_get splatd/uri
+        uri="$RET"
+        db_get splatd/basedn
+        basedn="$RET"
     
-    # Get values from the debconf db.
-    db_get splatd/uri
-    uri="$RET"
-    db_get splatd/basedn
-    basedn="$RET"
-    
-    # Set values where variables live in the config file.
-    sed -e "s|@URI@|$uri|" -e "s|@BASEDN@|$basedn|g" \
-        < $CONFIGFILE > $CONFIGFILE.tmp
-    mv -f $CONFIGFILE.tmp $CONFIGFILE
+        # Set values where variables live in the config template.
+        sed -e "s|@URI@|$uri|" -e "s|@BASEDN@|$basedn|g" \
+            < $CONFTEMPLATE > $CONFIGFILE
+    fi
 
     ;;
 

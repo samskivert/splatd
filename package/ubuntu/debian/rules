@@ -36,8 +36,8 @@ install-python%:
 	# Install the package into debian/splatd.
 	python$* setup.py install --root=$(CURDIR)/debian/splatd --install-scripts=/usr/sbin
 
-	# Install default configuration file
-	cp debian/splat.conf debian/splatd/etc/splatd/
+	# Install configuration file template for postinst script
+	install -m 0644 debian/splat.conf.in debian/splatd/usr/share/splatd/splat.conf.in
 
 # Build architecture-dependent files here.
 binary-arch: build install
