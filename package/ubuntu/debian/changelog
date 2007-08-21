@@ -1,3 +1,9 @@
+splatd (1.1.1-0ubuntu1) gutsy; urgency=low
+
+  * New upstream version.
+
+ -- Nick Barkas <snb@threerings.net>  Tue, 21 Aug 2007 09:32:23 -0400
+
 splatd (1.1-0ubuntu1) feisty; urgency=low
 
   * Initial release.

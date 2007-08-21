@@ -2,7 +2,8 @@ Source: splatd
 Section: python
 XS-Python-Version: >= 2.4
 Priority: optional
-Maintainer: Nick Barkas <snb@threerings.net>
+Maintainer: Ubuntu MOTU Developers <ubuntu-motu@lists.ubuntu.com>
+XSBC-Original-Maintainer: Nick Barkas <snb@threerings.net>
 Build-Depends: debhelper (>= 5.0.38), po-debconf
 Build-Depends-Indep: python-central (>= 0.5.8), python-all-dev
 Standards-Version: 3.7.2
