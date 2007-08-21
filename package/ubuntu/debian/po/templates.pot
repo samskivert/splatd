@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: snb@threerings.net\n"
-"POT-Creation-Date: 2006-06-13 12:19-0700\n"
+"POT-Creation-Date: 2007-02-13 16:00-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,13 +18,13 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../splatd.templates:3
+#: ../splatd.templates:1001
 msgid "URI of LDAP server:"
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../splatd.templates:3
+#: ../splatd.templates:1001
 msgid ""
 "This URI typically will be the same as would be found in your /etc/ldap/ldap."
 "conf file as the URI setting. For example, to connect with SSL to an LDAP "
@@ -34,13 +34,13 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../splatd.templates:11
+#: ../splatd.templates:2001
 msgid "Default search base:"
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../splatd.templates:11
+#: ../splatd.templates:2001
 msgid ""
 "This is the Base DN, which is typically the same as the BASE setting in /etc/"
 "ldap/ldap.conf. For example, this could be something like dc=example,dc=com "
