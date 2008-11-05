@@ -6,23 +6,20 @@
 
 PORTNAME=	splatd
 PORTVERSION=	1.2
-PORTREVISION=	1
 CATEGORIES=	net
-MASTER_SITES=	http://dpw.threerings.net/projects/splat/
-DISTNAME=	splatd-1.2-rc1
+MASTER_SITES=	${MASTER_SITE_GOOGLE_CODE}
 
 MAINTAINER=	snb@threerings.net
 COMMENT=	Splat is the Scalable Periodic LDAP Attribute Transmogrifier
 
 BUILD_DEPENDS=	${PYTHON_SITELIBDIR}/ZConfig:${PORTSDIR}/devel/py-zconfig \
-		${PYTHON_SITELIBDIR}/ldap:${PORTSDIR}/net/py-ldap2 \
+		${PYTHON_PKGNAMEPREFIX}ldap2>=2.3.1:${PORTSDIR}/net/py-ldap2 \
 		${PYTHON_SITELIBDIR}/twisted:${PORTSDIR}/devel/py-twistedCore
 RUN_DEPENDS=	${BUILD_DEPENDS}
 
-WRKSRC=		${WRKDIR}/splat-${PORTVERSION}-rc1
-
 USE_PYTHON=	2.4+
 USE_PYDISTUTILS=	yes
+PYDISTUTILS_PKGNAME=	splat
 USE_RC_SUBR=	splatd.sh
 SUB_LIST+=	PYTHON_CMD=${PYTHON_CMD}
 MAN5=		splat.conf.5
