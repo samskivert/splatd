@@ -73,7 +73,8 @@ popd
 svn add $TAG/docs/man
 svn add $TAG/docs/xhtml
 
-# Fix up the svn mimetypes for the html [needed by Google code]
+# Fix up the svn mimetypes for the html and css [needed by Google code]
 find $TAG/docs/xhtml -name \*.html -exec svn propset svn:mime-type text/html {} \;
+find $TAG/docs/xhtml -name \*.css -exec svn propset svn:mime-type text/css {} \;
 
 svn commit -m "Created $TAG from trunk for release $VERSION." $TAG
