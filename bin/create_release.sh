@@ -4,8 +4,13 @@
 # http://jpkg-library.googlecode.com/svn-history/r651/bin/create_release.sh by
 # Jonathan LePlastrier
 #
+# Run this script from the root of the subversion checkout, with trunk, tags,
+# etc. subdirectories all included. The first argument (required) is the version
+# number of the release. The second optional argument is the directory where
+# docbook-xsl stylesheets can be found. If not specified, the default directory
+# listed in trunk/docs/Makefile will be used.
 
-# Check the arguments
+# Check first argument
 VERSION=$1
 if [ -z $VERSION ]; then
     echo "Version must be set."
@@ -36,10 +41,9 @@ if [ $version_var != $VERSION ]; then
 fi
 
 # Run unit tests
-pushd .
 cd $TRUNK
 trial splat
-popd
+cd ..
 
 # Ensure tests succeed
 if [ $? -ne 0 ]; then
@@ -54,20 +58,20 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Build xhtml and man page documentation. This PREFIX is for Mac OS systems that
-# have docbook-xml and docbook-xsl installed in /opt/local by MacPorts. Will
-# probably need to be changed for other operating systems.
-pushd .
+# Build xhtml and man page documentation. Set DOCBOOK_XSL to override the
+# default if it was given as a second argument to this script.
 cd $TAG/docs
-env PREFIX=/opt/local make
+if [ -z $2 ]; then
+    make
+else
+    env DOCBOOK_XSL=$2 make
+fi
+cd ../../..
 
 if [ $? -ne 0 ]; then
     echo "Building documentation failed. Aborting release."
     exit 1
 fi
-
-# Back down to the root
-popd
 
 # Add the manual and man pages to tag so it can be served from SVN on Google
 svn add $TAG/docs/man
